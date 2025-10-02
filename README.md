@@ -11,7 +11,7 @@ https://github.com/Paxurux/chatter-box-dubbing
 
 
 
-NZG Official - Stable Version of chatter-box-dubbing
+NZG NZG 73 Official - Stable Version of chatter-box-dubbing
 This repository is a modified and stable copy of the
  original project, [Chatter-box-dubbing](https://github.com/Paxurux/chatter-box-dubbing)
 
