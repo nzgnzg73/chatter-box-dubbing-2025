@@ -22,7 +22,7 @@ I, the owner of NZG Official, sincerely apologize to the original code owner, [P
  (( ✅ [Chatter-box-dubbing](https://github.com/Paxurux/chatter-box-dubbing) ✅), and wish to clarify that my intention is not in any way to infringe upon your copyright or claim ownership of your work.
 I decided to download your repository and re-upload it to my account solely due to personal need and technical constraints:
  * PC Limitations: I do not have a powerful enough (PC 😭 😔) to run the code you release locally. My computer is very old and lacks a suitable graphics card.
- * Colab Usage: My primary need is to use this code in the ⚡[Google Colab ](https://colab.research.google.com/drive/1FZk_nxQZPGAWkGBWSl98AtQOTGCNoY56) ⚡
+ * Colab Usage: My primary need is to use this code in the ⚡[Google Colab ](https://colab.research.google.com/drive/1FZk_nxQZPGAWkGBWSl98AtQOTGCNoY56#scrollTo=C_Rr-Ritf5Wf) ⚡
     environment.
  * Updates Conflict: When you release a new update or feature in the original repository, that new code often conflicts or stops working with my existing Colab setup.
  * My Goal: Therefore, I uploaded a stable version here for personal use so I can maintain a version of the code that runs continuously in Colab without constant daily fixing.
