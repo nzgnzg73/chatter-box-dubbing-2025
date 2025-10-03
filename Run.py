@@ -3478,69 +3478,41 @@ Alice: I went to Japan. It was absolutely incredible!""",
                         interactive=False
                     )
 
-           # Main controls
-with gr.Row():
-    exaggeration = gr.Slider(
-        0.25, 2, step=.05, 
-        label="🎭 Exaggeration (Neutral = 0.5)", 
-        value=.5,
-        info="Higher values = more dramatic speech"
-    )
-    cfg_weight = gr.Slider(
-        0.2, 1, step=.05, 
-        label="⚡ CFG/Pace", 
-        value=0.5,
-        info="Controls generation speed vs quality"
-    )
+            # Main controls
+            with gr.Row():
+                exaggeration = gr.Slider(
+                    0.25, 2, step=.05, 
+                    label="🎭 Exaggeration (Neutral = 0.5)", 
+                    value=.5,
+                    info="Higher values = more dramatic speech"
+                )
+                cfg_weight = gr.Slider(
+                    0.2, 1, step=.05, 
+                    label="⚡ CFG/Pace", 
+                    value=0.5,
+                    info="Controls generation speed vs quality"
+                )
 
-with gr.Accordion("🔧 Advanced Settings", open=False):
-    with gr.Row():
-        chunk_size = gr.Slider(
-            100, 400, step=25, 
-            label="📄 Chunk size (characters per chunk)", 
-            value=300,
-            info="Smaller = more consistent, larger = fewer seams"
-        )
-        temp = gr.Slider(
-            0.05, 5, step=.05, 
-            label="🌡️ Temperature", 
-            value=.8,
-            info="Higher = more creative/varied"
-        )
-        seed_num = gr.Number(
-            value=0, 
-            label="🎲 Random seed (0 for random)",
-            info="Use same seed for reproducible results"
-        )
+            with gr.Accordion("🔧 Advanced Settings", open=False):
+                with gr.Row():
+                    chunk_size = gr.Slider(
+                        100, 400, step=25, 
+                        label="📄 Chunk size (characters per chunk)", 
+                        value=300,
+                        info="Smaller = more consistent, larger = fewer seams"
+                    )
+                    temp = gr.Slider(
+                        0.05, 5, step=.05, 
+                        label="🌡️ Temperature", 
+                        value=.8,
+                        info="Higher = more creative/varied"
+                    )
+                    seed_num = gr.Number(
+                        value=0, 
+                        label="🎲 Random seed (0 for random)",
+                        info="Use same seed for reproducible results"
+                    )
 
-# نیا سیکشن: وائس کنٹرول (Voice Controls)
-with gr.Accordion("🎙️ Voice Controls", open=False):
-    with gr.Row():
-        temperature = gr.Slider(
-            0.05, 1.5, step=0.01, 
-            label="🌡️ Temperature", 
-            value=0.7,
-            info="Controls randomness in speech (0.7 default)"
-        )
-        exaggeration_ctrl = gr.Slider(
-            0.0, 2.0, step=0.01, 
-            label="🎭 Exaggeration", 
-            value=0.4,
-            info="Adds dramatic effect to speech (0.4 default)"
-        )
-    with gr.Row():
-        cfg_weight_ctrl = gr.Slider(
-            0.0, 2.0, step=0.01, 
-            label="⚡ CFG Weight", 
-            value=0.6,
-            info="Balances generation speed and quality (0.6 default)"
-        )
-        speed_factor = gr.Slider(
-            0.25, 4.0, step=0.05, 
-            label="⏩ Speed Factor", 
-            value=1.0,
-            info="Adjusts speech speed (1.0 default)"
-        )
             # Audio Effects Section
             with gr.Accordion("🎵 Audio Effects & Processing", open=False):
                 gr.Markdown("### Professional audio effects and advanced processing")
@@ -4413,4 +4385,4 @@ with gr.Accordion("🎙️ Voice Controls", open=False):
     
 
 
-demo.launch()
+demo.launch(share=True)
