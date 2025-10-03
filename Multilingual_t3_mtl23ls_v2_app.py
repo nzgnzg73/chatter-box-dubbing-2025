@@ -1390,16 +1390,14 @@ def create_transcript_html_table(segments):
     html += "</table>"
     return html
 
-# Multilingual model download configuration  <<<< یہاں سے شروع ہوتا ہے (اپ ڈیٹڈ ورژن)
 MULTILINGUAL_MODEL_FILES = {
     'Cangjie5_TC': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/Cangjie5_TC.json',
     'conds': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/conds.pt',
     'mtl_tokenizer': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/mtl_tokenizer.json',
     's3gen': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/s3gen.pt',
-    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/blob/main/t3_mtl23ls_v2.safetensors',  # <<<< نئی کی (پرانی ہٹا دی گئی)
+    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/t3_mtl23ls_v2.safetensors',  # <<<< یہ correct URL (resolve/main)
     've': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/ve.pt'
 }
-
 # Model download directory
 MODEL_DOWNLOAD_DIR = "models/multilingual"
 download_status = {"status": "ready", "progress": 0, "current_file": "", "total_files": 0}
