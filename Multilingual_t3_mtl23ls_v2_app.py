@@ -1394,9 +1394,9 @@ def create_transcript_html_table(segments):
 MULTILINGUAL_MODEL_FILES = {
     'Cangjie5_TC': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/Cangjie5_TC.json',
     'conds': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/conds.pt',
-    'mtl_tokenizer': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/mtl_tokenizer.json',
+    'grapheme_mtl_merged_expanded_v1': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/grapheme_mtl_merged_expanded_v1.json',  # نئی tokenizer (old mtl_tokenizer replace)
     's3gen': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/s3gen.pt',
-    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/t3_mtl23ls_v2.safetensors',
+    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/t3_mtl23ls_v2.safetensors',  # نئی model (old t3_23lang replace)
     've': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/ve.pt'
 }
 # Model download directory
@@ -3212,16 +3212,16 @@ with gr.Blocks(title="🌍 Chatterbox TTS Pro - Multilingual") as demo:
                         )
                 
                 gr.Markdown("""
-                **Model Files:**
-                - `Cangjie5_TC` - Chinese tokenizer
-                - `conds` - Conditional embeddings
-                - `mtl_tokenizer` - Multilingual tokenizer
-                - `s3gen` - Speech generator
-                - `t3_mtl23ls_v2` - Text-to-speech model
-                - `ve` - Voice encoder
-                
-                **Total size:** ~2-4 GB
-                """)
+**Model Files:**
+- `Cangjie5_TC` - Chinese tokenizer
+- `conds` - Conditional embeddings
+- `grapheme_mtl_merged_expanded_v1` - Multilingual tokenizer (v2 - expanded grapheme support)
+- `s3gen` - Speech generator
+- `t3_mtl23ls_v2` - Text-to-speech model (v2 - improved multilingual)
+- `ve` - Voice encoder
+
+**Total size:** ~2-4 GB
+""")
     
 
     
