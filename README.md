@@ -1,3 +1,50 @@
+[Paxurux ✅ Chatter-box-dubbing](https://github.com/Paxurux/chatter-box-dubbing)
+
+
+The owner of this open source project is the one at the link below:
+https://github.com/Paxurux/chatter-box-dubbing
+
+
+
+
+
+
+
+NZG Official - Stable Version of chatter-box-dubbing
+This repository is a modified and stable copy of the
+ original project, [Chatter-box-dubbing](https://github.com/Paxurux/chatter-box-dubbing)
+
+🛑 Important Explanation: Reason for Re-uploading this Code
+
+
+I, the owner of NZG Official, sincerely apologize to the original code owner, [Paxurux ](https://github.com/Paxurux)
+
+ (( ✅ [Chatter-box-dubbing](https://github.com/Paxurux/chatter-box-dubbing) ✅), and wish to clarify that my intention is not in any way to infringe upon your copyright or claim ownership of your work.
+I decided to download your repository and re-upload it to my account solely due to personal need and technical constraints:
+ * PC Limitations: I do not have a powerful enough (PC 😭 😔) to run the code you release locally. My computer is very old and lacks a suitable graphics card.
+ * Colab Usage: My primary need is to use this code in the ⚡[Google Colab ](https://github.com/Paxurux/chatter-box-dubbing) ⚡
+    environment.
+ * Updates Conflict: When you release a new update or feature in the original repository, that new code often conflicts or stops working with my existing Colab setup.
+ * My Goal: Therefore, I uploaded a stable version here for personal use so I can maintain a version of the code that runs continuously in Colab without constant daily fixing.
+
+
+🔗 Original Source and Credit
+
+All credit and gratitude for the original project belong to its true creator, (✅ [Paxurux ](https://github.com/Paxurux) ✅)
+
+ * ✅ Original Repository Link: https://github.com/Paxurux/chatter-box-dubbing
+ * License: [ Please refer to the original repository's license]
+
+I value your work and am using this copy only out of necessity.
+
+✉📩📧 Contact and Assurance of Immediate Action
+If you have any objection or legal concern regarding my upload of this repository, and you wish to issue a strike, please contact me before taking any action. I will immediately remove these files upon your request.
+
+Contact Email: nzgnzg73@gmail.com
+
+Thank you very much for your understanding and cooperation.
+
+
 
 ---![Screenshot 2025-06-04 132426](https://github.com/user-attachments/assets/6406d393-ee7d-4445-a5e9-92f07fd43e27)
 
