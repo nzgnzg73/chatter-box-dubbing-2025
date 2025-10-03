@@ -3218,7 +3218,7 @@ with gr.Blocks(title="🌍 Chatterbox TTS Pro - Multilingual") as demo:
                 - `conds` - Conditional embeddings
                 - `mtl_tokenizer` - Multilingual tokenizer
                 - `s3gen` - Speech generator
-                - `t3_23lang` - Text-to-speech model
+                - `t3_mtl23ls_v2` - Text-to-speech model
                 - `ve` - Voice encoder
                 
                 **Total size:** ~2-4 GB
@@ -3481,13 +3481,13 @@ Alice: I went to Japan. It was absolutely incredible!""",
             # Main controls
             with gr.Row():
                 exaggeration = gr.Slider(
-                    0.25, 2, step=.05, 
+                    0.25, 4, step=.05, 
                     label="🎭 Exaggeration (Neutral = 0.5)", 
                     value=.5,
                     info="Higher values = more dramatic speech"
                 )
                 cfg_weight = gr.Slider(
-                    0.2, 1, step=.05, 
+                    0.2, 4, step=.05, 
                     label="⚡ CFG/Pace", 
                     value=0.5,
                     info="Controls generation speed vs quality"
