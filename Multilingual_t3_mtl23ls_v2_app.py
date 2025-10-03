@@ -3211,13 +3211,13 @@ with gr.Blocks(title="🌍 Chatterbox TTS Pro - Multilingual") as demo:
                             size="sm"
                         )
                 
-                gr.Markdown("""
+               gr.Markdown("""
 **Model Files:**
 - `Cangjie5_TC` - Chinese tokenizer
 - `conds` - Conditional embeddings
 - `grapheme_mtl_merged_expanded_v1` - Multilingual tokenizer (v2 - expanded grapheme support)
 - `s3gen` - Speech generator
-- `t3_mtl23ls_v2` - Text-to-speech model (v2 - improved multilingual)
+- `t3_mtl23ls_v2` - Text-to-speech model (v2 - improved 23 languages)
 - `ve` - Voice encoder
 
 **Total size:** ~2-4 GB
