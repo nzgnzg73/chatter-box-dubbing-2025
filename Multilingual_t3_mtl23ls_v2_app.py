@@ -1396,7 +1396,7 @@ MULTILINGUAL_MODEL_FILES = {
     'conds': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/conds.pt',
     'mtl_tokenizer': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/mtl_tokenizer.json',
     's3gen': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/s3gen.pt',
-    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/t3_mtl23ls_v2.safetensors',  # <<<< نئی کی (پرانی ہٹا دی گئی)
+    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/blob/main/t3_mtl23ls_v2.safetensors',  # <<<< نئی کی (پرانی ہٹا دی گئی)
     've': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/ve.pt'
 }
 
