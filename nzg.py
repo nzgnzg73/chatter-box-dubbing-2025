@@ -2644,9 +2644,9 @@ def load_selected_preset(preset_name):
     if preset:
         # Use the saved audio path, not the original
         ref_audio_path = preset.get('ref_audio_path', '')
-        
+        # Always return the preset data, with ref_audio_path if valid
         return (
-            f"✅ Loaded voice preset '{preset_name}'" + (" with custom voice" if ref_audio_path else ""),
+            f"✅ Loaded voice preset '{preset_name}'" + (" with custom voice" if ref_audio_path and os.path.exists(ref_audio_path) else ""),
             preset['exaggeration'],
             preset['temperature'], 
             preset['cfg_weight'],
