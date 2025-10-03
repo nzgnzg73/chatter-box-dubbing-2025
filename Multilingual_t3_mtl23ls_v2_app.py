@@ -1390,12 +1390,13 @@ def create_transcript_html_table(segments):
     html += "</table>"
     return html
 
+# Multilingual model download configuration
 MULTILINGUAL_MODEL_FILES = {
     'Cangjie5_TC': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/Cangjie5_TC.json',
     'conds': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/conds.pt',
     'mtl_tokenizer': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/mtl_tokenizer.json',
     's3gen': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/s3gen.pt',
-    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/t3_mtl23ls_v2.safetensors',  # <<<< یہ correct URL (resolve/main)
+    't3_mtl23ls_v2': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/t3_mtl23ls_v2.safetensors',
     've': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/ve.pt'
 }
 # Model download directory
