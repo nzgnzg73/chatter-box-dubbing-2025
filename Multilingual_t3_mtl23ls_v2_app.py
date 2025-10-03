@@ -1392,7 +1392,7 @@ def create_transcript_html_table(segments):
 
 # Multilingual model download configuration
 MULTILINGUAL_MODEL_FILES = {
-    'Cangjie5_TC': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/grapheme_mtl_merged_expanded_v1.json',
+    ''Cangjie5_TC': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/Cangjie5_TC.json',
     'conds': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/conds.pt',
     'mtl_tokenizer': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/mtl_tokenizer.json',
     's3gen': 'https://huggingface.co/ResembleAI/chatterbox/resolve/main/s3gen.pt',
