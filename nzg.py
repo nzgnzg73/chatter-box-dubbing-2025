@@ -1263,6 +1263,8 @@ def generate_tts_for_segment_enhanced(text: str, language: str, target_duration:
                 language_id=language,
                 temperature=0.8,
                 cfg_weight=0.5,
+                exaggeration=0.4,  # Added based on your earlier request
+                speed_factor=1.0   # Added based on your earlier request
             )
         
         # Convert to numpy array
@@ -1286,18 +1288,6 @@ def generate_tts_for_segment_enhanced(text: str, language: str, target_duration:
         import traceback
         traceback.print_exc()
         return None
-
-def generate_tts_for_segment(text: str, language: str, target_duration: float):
-    """Generate TTS audio for a single segment"""
-    try:
-        # Get the current multilingual model
-        global MULTILINGUAL_MODEL
-        if MULTILINGUAL_MODEL is None:
-            MULTILINGUAL_MODEL = get_or_load_model()
-        
-        if MULTILINGUAL_MODEL is None:
-            print("❌ No TTS model available")
-            return None
         
         # Generate TTS
         with warnings.catch_warnings():
@@ -1308,6 +1298,8 @@ def generate_tts_for_segment(text: str, language: str, target_duration: float):
                 language_id=language,
                 temperature=0.8,
                 cfg_weight=0.5,
+                exaggeration=0.4,  # Added based on your earlier request
+                speed_factor=1.0   # Added based on your earlier request
             )
         
         # Convert to numpy array
@@ -1325,7 +1317,6 @@ def generate_tts_for_segment(text: str, language: str, target_duration: float):
     except Exception as e:
         print(f"❌ TTS generation error: {e}")
         return None
-
 def get_api_status():
     """Get current API manager status"""
     initialize_dubbing_system()
@@ -1675,7 +1666,7 @@ def save_voice_preset(name, settings):
     ref_audio_path = settings.get('ref_audio', '')
     saved_audio_path = None
     
-    if ref_audio_path:
+        if ref_audio_path:
         saved_audio_path = copy_reference_audio(ref_audio_path, name)
         if not saved_audio_path:
             print(f"⚠️ Warning: Could not save reference audio for preset '{name}'")
@@ -1688,7 +1679,8 @@ def save_voice_preset(name, settings):
         'language': settings.get('language', 'en'),  # Save language setting
         'ref_audio_path': saved_audio_path or '',  # Path to saved audio file
         'original_ref_audio': ref_audio_path or '',  # Original path for reference
-        'created': datetime.now().isoformat()
+        'created': datetime.now().isoformat(),
+        'speed_factor': settings.get('speed_factor', 1.0)  # Added based on your earlier request
     }
     
     success = save_voice_presets(presets)
@@ -2113,43 +2105,43 @@ def apply_audio_effects(audio, sr, effects_settings):
         print(f"   After noise reduction: max={np.max(np.abs(processed_audio)):.4f}")
     
     if effects_settings.get('enable_equalizer', False):
-        eq_bands = {
-            'sub_bass': effects_settings.get('eq_sub_bass', 0),
-            'bass': effects_settings.get('eq_bass', 0),
-            'low_mid': effects_settings.get('eq_low_mid', 0),
-            'mid': effects_settings.get('eq_mid', 0),
-            'high_mid': effects_settings.get('eq_high_mid', 0),
-            'presence': effects_settings.get('eq_presence', 0),
-            'brilliance': effects_settings.get('eq_brilliance', 0)
-        }
-        print(f"   EQ settings: {eq_bands}")
-        print(f"   Before EQ: max={np.max(np.abs(processed_audio)):.4f}")
-        processed_audio = apply_equalizer(processed_audio, sr, eq_bands)
-        print(f"   After EQ: max={np.max(np.abs(processed_audio)):.4f}")
-    
-    if effects_settings.get('enable_spatial', False):
-        processed_audio = apply_spatial_audio(
-            processed_audio, sr,
-            azimuth=effects_settings.get('spatial_azimuth', 0),
-            elevation=effects_settings.get('spatial_elevation', 0),
-            distance=effects_settings.get('spatial_distance', 1.0)
-        )
-        print(f"   After spatial: max={np.max(np.abs(processed_audio)):.4f}")
-    
-    # Background mixing (applied last)
-    if effects_settings.get('enable_background', False):
-        processed_audio = mix_with_background(
-            processed_audio, sr,
-            background_path=effects_settings.get('background_path', ''),
-            bg_volume=effects_settings.get('bg_volume', 0.3),
-            speech_volume=effects_settings.get('speech_volume', 1.0),
-            fade_in=effects_settings.get('bg_fade_in', 1.0),
-            fade_out=effects_settings.get('bg_fade_out', 1.0)
-        )
-        print(f"   After background: max={np.max(np.abs(processed_audio)):.4f}")
-    
-    print(f"🎵 Audio effects processing complete. Final max: {np.max(np.abs(processed_audio)):.4f}")
-    return processed_audio
+    eq_bands = {
+        'sub_bass': effects_settings.get('eq_sub_bass', 0),
+        'bass': effects_settings.get('eq_bass', 0),
+        'low_mid': effects_settings.get('eq_low_mid', 0),
+        'mid': effects_settings.get('eq_mid', 0),
+        'high_mid': effects_settings.get('eq_high_mid', 0),
+        'presence': effects_settings.get('eq_presence', 0),
+        'brilliance': effects_settings.get('eq_brilliance', 0)
+    }
+    print(f"   EQ settings: {eq_bands}")
+    print(f"   Before EQ: max={np.max(np.abs(processed_audio)):.4f}")
+    processed_audio = apply_equalizer(processed_audio, sr, eq_bands)
+    print(f"   After EQ: max={np.max(np.abs(processed_audio)):.4f}")
+
+if effects_settings.get('enable_spatial', False):
+    processed_audio = apply_spatial_audio(
+        processed_audio, sr,
+        azimuth=effects_settings.get('spatial_azimuth', 0),
+        elevation=effects_settings.get('spatial_elevation', 0),
+        distance=effects_settings.get('spatial_distance', 1.0)
+    )
+    print(f"   After spatial: max={np.max(np.abs(processed_audio)):.4f}")
+
+# Background mixing (applied last)
+if effects_settings.get('enable_background', False):
+    processed_audio = mix_with_background(
+        processed_audio, sr,
+        background_path=effects_settings.get('background_path', ''),
+        bg_volume=effects_settings.get('bg_volume', 0.3),
+        speech_volume=effects_settings.get('speech_volume', 1.0),
+        fade_in=effects_settings.get('bg_fade_in', 1.0),
+        fade_out=effects_settings.get('bg_fade_out', 1.0)
+    )
+    print(f"   After background: max={np.max(np.abs(processed_audio)):.4f}")
+
+print(f"🎵 Audio effects processing complete. Final max: {np.max(np.abs(processed_audio)):.4f}")
+return processed_audio
 
 # --- Export Functions ---
 EXPORT_DIR = "exports"
@@ -2469,6 +2461,7 @@ def generate_tts_audio(
     speaker_transition_pause: float = 0.3,
     # Speaker settings (will be passed as JSON string)
     speaker_settings_json: str = "{}",
+    speed_factor_input: float = 1.0  # Added based on your earlier request
 ) -> tuple[tuple[int, np.ndarray], tuple[int, np.ndarray], str]:
     """
     Generates TTS audio using the multilingual ChatterBox model.
@@ -2582,6 +2575,7 @@ def generate_tts_audio(
                     exaggeration=exaggeration_input,
                     temperature=temperature_input,
                     cfg_weight=cfgw_input,
+                    speed_factor=speed_factor_input  # Added based on your earlier request
                 )
                 
                 audio_chunks.append(wav.squeeze(0).numpy())
@@ -2603,20 +2597,20 @@ def generate_tts_audio(
             final_audio = np.concatenate(concatenated_chunks)
         
         # Apply audio effects (both basic and advanced)
-        if any(effects_settings[key] for key in ['enable_reverb', 'enable_echo', 'enable_pitch', 'enable_noise_reduction', 'enable_equalizer', 'enable_spatial', 'enable_background']):
-            print("Applying audio effects...")
-            final_audio = apply_audio_effects(final_audio, current_model.sr, effects_settings)
-        
-        # Create audio output tuple
-        audio_output = (current_model.sr, final_audio)
-        
-        # Generate waveform analysis
-        print("🔍 Performing waveform analysis...")
-        _, stats = create_waveform_visualization(final_audio, current_model.sr)
-        waveform_info = format_waveform_info(stats)
-        
-        print("Audio generation and analysis complete.")
-        return audio_output, audio_output, waveform_info
+if any(effects_settings[key] for key in ['enable_reverb', 'enable_echo', 'enable_pitch', 'enable_noise_reduction', 'enable_equalizer', 'enable_spatial', 'enable_background']):
+    print("Applying audio effects...")
+    final_audio = apply_audio_effects(final_audio, current_model.sr, effects_settings)
+
+# Create audio output tuple
+audio_output = (current_model.sr, final_audio)
+
+# Generate waveform analysis
+print("🔍 Performing waveform analysis...")
+_, stats = create_waveform_visualization(final_audio, current_model.sr)
+waveform_info = format_waveform_info(stats)
+
+print("Audio generation and analysis complete.")
+return audio_output, audio_output, waveform_info
 
 # Voice preset management functions for Gradio
 def save_current_preset(preset_name, exaggeration, temperature, cfg_weight, chunk_size, ref_audio):
@@ -2834,7 +2828,8 @@ def generate_conversation_audio(
     effects_settings=None,
     use_multilingual=False,
     language_id="en",
-    current_model=None
+    current_model=None,
+    speed_factor=1.0  # Added based on your earlier request
 ):
     """Generate a complete conversation with multiple voices."""
     try:
@@ -2874,93 +2869,128 @@ def generate_conversation_audio(
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 
-                # Generate audio for this line
-                try:
-                    # Generate with multilingual parameters using speaker's language
-                    speaker_language = settings.get('language', language_id)  # Use speaker's language or fallback to global
-                    wav = current_model.generate(
-                        text,
-                        audio_prompt_path=settings.get('ref_audio', ''),
-                        language_id=speaker_language,
-                        exaggeration=settings.get('exaggeration', 0.5),
-                        temperature=settings.get('temperature', 0.8),
-                        cfg_weight=settings.get('cfg_weight', 0.5),
-                    )
-                    
-                    line_audio = wav.squeeze(0).numpy()
-                    
-                    # Apply individual speaker effects if specified
-                    if effects_settings:
-                        line_audio = apply_audio_effects(line_audio, current_model.sr, effects_settings)
-                    
-                    conversation_audio_chunks.append(line_audio)
-                    conversation_info.append({
-                        'speaker': speaker,
-                        'text': text[:50] + ('...' if len(text) > 50 else ''),
-                        'duration': len(line_audio) / current_model.sr,
-                        'samples': len(line_audio),
-                        'language': speaker_language
-                    })
-                    
-                except Exception as gen_error:
-                    return None, f"❌ Error generating audio for {speaker}: {str(gen_error)}"
-        
-        # Combine all audio with proper timing
-        print("🎵 Combining conversation audio with proper timing...")
-        
-        # Calculate pause durations
-        conversation_pause_samples = int(current_model.sr * conversation_pause_duration)
-        transition_pause_samples = int(current_model.sr * speaker_transition_pause)
-        
-        final_audio_parts = []
-        previous_speaker = None
-        
-        for i, (audio_chunk, info) in enumerate(zip(conversation_audio_chunks, conversation_info)):
-            current_speaker = info['speaker']
-            
-            # Add audio chunk
-            final_audio_parts.append(audio_chunk)
-            
-            # Add pause after each line (except the last one)
-            if i < len(conversation_audio_chunks) - 1:
-                next_speaker = conversation_info[i + 1]['speaker']
+                # Generate audio with multilingual parameters if enabled
+                wav = current_model.generate(
+                    text,
+                    language_id=language_id if use_multilingual else "en",
+                    exaggeration=settings.get('exaggeration', 0.4),
+                    temperature=settings.get('temperature', 0.7),
+                    cfg_weight=settings.get('cfg_weight', 0.6),
+                    speed_factor=speed_factor  # Added based on your earlier request
+                )
                 
-                # Different pause duration based on speaker change
-                if current_speaker != next_speaker:
-                    # Speaker transition - longer pause
-                    pause_samples = conversation_pause_samples
-                else:
-                    # Same speaker continuing - shorter pause
-                    pause_samples = transition_pause_samples
+                audio_chunk = wav.squeeze(0).numpy()
+                conversation_audio_chunks.append(audio_chunk)
                 
-                pause_audio = np.zeros(pause_samples)
-                final_audio_parts.append(pause_audio)
+                # Add pause after each line
+                if i < len(conversation) - 1:
+                    pause_samples = int(current_model.sr * conversation_pause_duration)
+                    conversation_audio_chunks.append(np.zeros(pause_samples))
+                
+                # Add speaker transition pause if speaker changes
+                if i > 0 and conversation[i-1]['speaker'] != speaker:
+                    transition_samples = int(current_model.sr * speaker_transition_pause)
+                    conversation_audio_chunks.append(np.zeros(transition_samples))
+                
+                conversation_info.append({
+                    'speaker': speaker,
+                    'text': text,
+                    'start_time': len(np.concatenate(conversation_audio_chunks[:-1])) / current_model.sr
+                })
         
-        # Concatenate all parts
-        final_conversation_audio = np.concatenate(final_audio_parts)
+        # Concatenate all audio chunks
+        final_audio = np.concatenate(conversation_audio_chunks)
         
-        # Create conversation summary
-        total_duration = len(final_conversation_audio) / current_model.sr
-        unique_speakers = len(set([info['speaker'] for info in conversation_info]))
-        
-        # Collect language information
-        languages_used = list(set([info['language'] for info in conversation_info]))
-        
-        summary = {
-            'total_lines': len(conversation),
-            'unique_speakers': unique_speakers,
-            'total_duration': total_duration,
-            'speakers': list(set([info['speaker'] for info in conversation_info])),
-            'languages_used': languages_used,
-            'conversation_info': conversation_info
-        }
-        
-        print(f"✅ Conversation generated: {len(conversation)} lines, {unique_speakers} speakers, {total_duration:.1f}s")
-        
-        return (current_model.sr, final_conversation_audio), summary
+        return (current_model.sr, final_audio), conversation_info
         
     except Exception as e:
         return None, f"❌ Conversation generation error: {str(e)}"
+                
+                # Generate audio for this line
+try:
+    # Generate with multilingual parameters using speaker's language
+    speaker_language = settings.get('language', language_id)  # Use speaker's language or fallback to global
+    wav = current_model.generate(
+        text,
+        audio_prompt_path=settings.get('ref_audio', ''),
+        language_id=speaker_language,
+        exaggeration=settings.get('exaggeration', 0.5),
+        temperature=settings.get('temperature', 0.8),
+        cfg_weight=settings.get('cfg_weight', 0.5),
+        speed_factor=settings.get('speed_factor', 1.0)  # Added based on your earlier request
+    )
+    
+    line_audio = wav.squeeze(0).numpy()
+    
+    # Apply individual speaker effects if specified
+    if effects_settings:
+        line_audio = apply_audio_effects(line_audio, current_model.sr, effects_settings)
+    
+    conversation_audio_chunks.append(line_audio)
+    conversation_info.append({
+        'speaker': speaker,
+        'text': text[:50] + ('...' if len(text) > 50 else ''),
+        'duration': len(line_audio) / current_model.sr,
+        'samples': len(line_audio),
+        'language': speaker_language
+    })
+    
+except Exception as gen_error:
+    return None, f"❌ Error generating audio for {speaker}: {str(gen_error)}"
+
+# Combine all audio with proper timing
+print("🎵 Combining conversation audio with proper timing...")
+
+# Calculate pause durations
+conversation_pause_samples = int(current_model.sr * conversation_pause_duration)
+transition_pause_samples = int(current_model.sr * speaker_transition_pause)
+
+final_audio_parts = []
+previous_speaker = None
+
+for i, (audio_chunk, info) in enumerate(zip(conversation_audio_chunks, conversation_info)):
+    current_speaker = info['speaker']
+    
+    # Add audio chunk
+    final_audio_parts.append(audio_chunk)
+    
+    # Add pause after each line (except the last one)
+    if i < len(conversation_audio_chunks) - 1:
+        next_speaker = conversation_info[i + 1]['speaker']
+        
+        # Different pause duration based on speaker change
+        if current_speaker != next_speaker:
+            # Speaker transition - longer pause
+            pause_samples = conversation_pause_samples
+        else:
+            # Same speaker continuing - shorter pause
+            pause_samples = transition_pause_samples
+        
+        pause_audio = np.zeros(pause_samples)
+        final_audio_parts.append(pause_audio)
+
+# Concatenate all parts
+final_conversation_audio = np.concatenate(final_audio_parts)
+
+# Create conversation summary
+total_duration = len(final_conversation_audio) / current_model.sr
+unique_speakers = len(set([info['speaker'] for info in conversation_info]))
+
+# Collect language information
+languages_used = list(set([info['language'] for info in conversation_info]))
+
+summary = {
+    'total_lines': len(conversation),
+    'unique_speakers': unique_speakers,
+    'total_duration': total_duration,
+    'speakers': list(set([info['speaker'] for info in conversation_info])),
+    'languages_used': languages_used,
+    'conversation_info': conversation_info
+}
+
+print(f"✅ Conversation generated: {len(conversation)} lines, {unique_speakers} speakers, {total_duration:.1f}s")
+
+return (current_model.sr, final_conversation_audio), summary
 
 def format_conversation_info(summary):
     """Format conversation summary for display."""
@@ -2968,30 +2998,30 @@ def format_conversation_info(summary):
         return summary
     
     try:
-        # Format languages used
-        languages_used = summary.get('languages_used', [])
-        language_names = [SUPPORTED_LANGUAGES.get(lang, lang) for lang in languages_used]
-        
-        info_text = f"""
+    # Format languages used
+    languages_used = summary.get('languages_used', [])
+    language_names = [SUPPORTED_LANGUAGES.get(lang, lang) for lang in languages_used]
+    
+    info_text = f"""
 🎭 Conversation Summary:
 • Total Lines: {summary['total_lines']} | Speakers: {summary['unique_speakers']} | Duration: {summary['total_duration']:.1f}s
 • Speakers: {', '.join(summary['speakers'])}
 • Languages: {', '.join(language_names)} ({len(languages_used)} language{'s' if len(languages_used) != 1 else ''})
 
 📝 Line Breakdown:"""
-        
-        for i, line_info in enumerate(summary['conversation_info'], 1):
-            speaker = line_info['speaker']
-            text_preview = line_info['text']
-            duration = line_info['duration']
-            language = line_info.get('language', 'en')
-            language_name = SUPPORTED_LANGUAGES.get(language, language)
-            info_text += f"\n{i:2d}. {speaker} ({language_name}): \"{text_preview}\" ({duration:.1f}s)"
-        
-        return info_text.strip()
-        
-    except Exception as e:
-        return f"Error formatting conversation info: {str(e)}"
+    
+    for i, line_info in enumerate(summary['conversation_info'], 1):
+        speaker = line_info['speaker']
+        text_preview = line_info['text']
+        duration = line_info['duration']
+        language = line_info.get('language', 'en')
+        language_name = SUPPORTED_LANGUAGES.get(language, language)
+        info_text += f"\n{i:2d}. {speaker} ({language_name}): \"{text_preview}\" ({duration:.1f}s)"
+    
+    return info_text.strip()
+    
+except Exception as e:
+    return f"Error formatting conversation info: {str(e)}"
 
 def update_speaker_settings_from_presets(speakers_text, current_settings_json):
     """Update speaker settings by loading from available presets."""
@@ -3013,7 +3043,8 @@ def update_speaker_settings_from_presets(speakers_text, current_settings_json):
                     'ref_audio': preset.get('ref_audio_path', ''),
                     'exaggeration': preset.get('exaggeration', 0.5),
                     'temperature': preset.get('temperature', 0.8),
-                    'cfg_weight': preset.get('cfg_weight', 0.5)
+                    'cfg_weight': preset.get('cfg_weight', 0.5),
+                    'speed_factor': preset.get('speed_factor', 1.0)  # Added based on your earlier request
                 }
                 print(f"🎭 Auto-loaded preset for speaker '{speaker}'")
         
@@ -3075,7 +3106,8 @@ def setup_speaker_audio_components(script_text):
                 'exaggeration': preset.get('exaggeration', 0.5),
                 'temperature': preset.get('temperature', 0.8),
                 'cfg_weight': preset.get('cfg_weight', 0.5),
-                'language': preset.get('language', 'en')
+                'language': preset.get('language', 'en'),
+                'speed_factor': preset.get('speed_factor', 1.0)  # Added based on your earlier request
             }
         else:
             speaker_settings[speaker] = {
@@ -3083,7 +3115,8 @@ def setup_speaker_audio_components(script_text):
                 'exaggeration': 0.5,
                 'temperature': 0.8,
                 'cfg_weight': 0.5,
-                'language': 'en'
+                'language': 'en',
+                'speed_factor': 1.0  # Added based on your earlier request
             }
     
     updates.append(json.dumps(speaker_settings))
@@ -3172,313 +3205,271 @@ with gr.Blocks(title="🌍 Chatterbox TTS Pro - Multilingual") as demo:
                 )
                 
                 download_progress_display = gr.Textbox(
-                    label="📊 Download Progress",
-                    value=get_download_status(),
-                    interactive=False,
-                    lines=2
-                )
+    label="📊 Download Progress",
+    value=get_download_status(),
+    interactive=False,
+    lines=2
+)
 
-                model_loading_status = gr.Textbox(
-                    label="🚀 Model Loading Status",
-                    value=check_model_loaded_status(),
-                    interactive=False,
-                    lines=2
+model_loading_status = gr.Textbox(
+    label="🚀 Model Loading Status",
+    value=check_model_loaded_status(),
+    interactive=False,
+    lines=2
+)
+
+with gr.Column(scale=1):
+    with gr.Group():
+        check_models_btn = gr.Button(
+            "🔍 Check Model Files",
+            variant="secondary",
+            size="sm"
+        )
+
+        download_models_btn = gr.Button(
+            "📥 Download Multilingual Models",
+            variant="primary",
+            size="lg"
+        )
+
+        load_model_btn = gr.Button(
+            "🚀 Load Model into Memory",
+            variant="secondary",
+            size="lg",
+            visible=False
+        )
+
+        refresh_status_btn = gr.Button(
+            "🔄 Refresh Status",
+            variant="secondary",
+            size="sm"
+        )
+
+gr.Markdown("""
+**Model Files:**
+- `Cangjie5_TC` - Chinese tokenizer
+- `conds` - Conditional embeddings
+- `mtl_tokenizer` - Multilingual tokenizer
+- `s3gen` - Speech generator
+- `t3_23lang` - Text-to-speech model
+- `ve` - Voice encoder
+
+**Total size:** ~2-4 GB
+""")
+
+with gr.Row():
+    with gr.Column(scale=2):
+        # Main text input
+        text = gr.Textbox(
+            value="Now let's make my mum's favourite. So three mars bars into the pan. Then we add the tuna and just stir for a bit, just let the chocolate and fish infuse. A sprinkle of olive oil and some tomato ketchup. Now smell that. Oh boy this is going to be incredible.",
+            label="📝 Text to synthesize (any length supported)",
+            max_lines=10,
+            placeholder="Enter your text here..."
+        )
+        
+        # Language selection
+        with gr.Group():
+            gr.Markdown("### 🌍 Language Selection")
+            with gr.Row():
+                language_dropdown = gr.Dropdown(
+                    choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+                    value="en",
+                    label="🗣️ Target Language",
+                    info="Select the language for text-to-speech generation"
                 )
             
-                with gr.Column(scale=1):
-                    with gr.Group():
-                        check_models_btn = gr.Button(
-                            "🔍 Check Model Files",
-                            variant="secondary",
-                            size="sm"
-                        )
-
-                        download_models_btn = gr.Button(
-                            "📥 Download Multilingual Models",
-                            variant="primary",
-                            size="lg"
-                        )
-
-                        load_model_btn = gr.Button(
-                            "🚀 Load Model into Memory",
-                            variant="secondary",
-                            size="lg",
-                            visible=False
-                        )
-
-                        refresh_status_btn = gr.Button(
-                            "🔄 Refresh Status",
-                            variant="secondary",
-                            size="sm"
-                        )
-                
-                gr.Markdown("""
-                **Model Files:**
-                - `Cangjie5_TC` - Chinese tokenizer
-                - `conds` - Conditional embeddings
-                - `mtl_tokenizer` - Multilingual tokenizer
-                - `s3gen` - Speech generator
-                - `t3_23lang` - Text-to-speech model
-                - `ve` - Voice encoder
-                
-                **Total size:** ~2-4 GB
-                """)
-    
-
-    
-    with gr.Row():
-        with gr.Column(scale=2):
-            # Main text input
-            text = gr.Textbox(
-                value="Now let's make my mum's favourite. So three mars bars into the pan. Then we add the tuna and just stir for a bit, just let the chocolate and fish infuse. A sprinkle of olive oil and some tomato ketchup. Now smell that. Oh boy this is going to be incredible.",
-                label="📝 Text to synthesize (any length supported)",
-                max_lines=10,
-                placeholder="Enter your text here..."
+            # Show language availability info
+            if MULTILINGUAL_AVAILABLE:
+                gr.Markdown("*✅ Multilingual support available - Download models above to use 23 languages*")
+            else:
+                gr.Markdown("*❌ No TTS models available - Please install chatterbox-tts or download models*")
+            
+            gr.Markdown("*💡 Models are loaded on-demand when you generate speech*")
+        
+        # Reference audio
+        ref_wav = gr.Audio(
+            sources=["upload", "microphone"],
+            type="filepath",
+            label="🎤 Reference Audio File (Optional)",
+            value="https://storage.googleapis.com/chatterbox-demo-samples/prompts/female_shadowheart4.flac"
+        )
+        
+        # Voice Conversation Mode Section
+        with gr.Accordion("🎭 Voice Conversation Mode", open=False):
+            gr.Markdown("### 🗣️ Multi-Voice Conversation Generator")
+            gr.Markdown("*Generate conversations between multiple speakers with different voices*")
+            
+            conversation_mode = gr.Checkbox(
+                label="🎭 Enable Conversation Mode",
+                value=False,
+                info="Switch to conversation mode to generate multi-speaker dialogues"
             )
             
-            # Language selection
-            with gr.Group():
-                gr.Markdown("### 🌍 Language Selection")
-                with gr.Row():
-                    language_dropdown = gr.Dropdown(
-                        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                        value="en",
-                        label="🗣️ Target Language",
-                        info="Select the language for text-to-speech generation"
-                    )
-                
-                # Show language availability info
-                if MULTILINGUAL_AVAILABLE:
-                    gr.Markdown("*✅ Multilingual support available - Download models above to use 23 languages*")
-                else:
-                    gr.Markdown("*❌ No TTS models available - Please install chatterbox-tts or download models*")
-                
-                gr.Markdown("*💡 Models are loaded on-demand when you generate speech*")
-            
-            # Reference audio
-            ref_wav = gr.Audio(
-                sources=["upload", "microphone"],
-                type="filepath",
-                label="🎤 Reference Audio File (Optional)",
-                value="https://storage.googleapis.com/chatterbox-demo-samples/prompts/female_shadowheart4.flac"
-            )
-            
-            # Voice Conversation Mode Section
-            with gr.Accordion("🎭 Voice Conversation Mode", open=False):
-                gr.Markdown("### 🗣️ Multi-Voice Conversation Generator")
-                gr.Markdown("*Generate conversations between multiple speakers with different voices*")
-                
-                conversation_mode = gr.Checkbox(
-                    label="🎭 Enable Conversation Mode",
-                    value=False,
-                    info="Switch to conversation mode to generate multi-speaker dialogues"
-                )
-                
-                with gr.Row():
-                    with gr.Column(scale=2):
-                        conversation_script = gr.Textbox(
-                            label="📝 Conversation Script",
-                            placeholder="""Enter conversation in this format:
+            with gr.Row():
+                with gr.Column(scale=2):
+                    conversation_script = gr.Textbox(
+                        label="📝 Conversation Script",
+                        placeholder="""Enter conversation in this format:
 
 Alice: Hello there! How are you doing today?
 Bob: I'm doing great, thanks for asking! How about you?
 Alice: I'm wonderful! I just got back from vacation.
 Bob: That sounds amazing! Where did you go?
 Alice: I went to Japan. It was absolutely incredible!""",
-                            lines=8,
-                            info="Format: 'SpeakerName: Text' - Each line should start with speaker name followed by colon"
-                        )
-                        
-                        # Conversation timing controls
-                        with gr.Row():
-                            conversation_pause = gr.Slider(
-                                0.2, 2.0, step=0.1,
-                                label="🔇 Speaker Change Pause (s)",
-                                value=0.8,
-                                info="Pause duration when speakers change"
-                            )
-                            speaker_transition_pause = gr.Slider(
-                                0.1, 1.0, step=0.1,
-                                label="⏸️ Same Speaker Pause (s)",
-                                value=0.3,
-                                info="Pause when same speaker continues"
-                            )
-                    
-                    with gr.Column(scale=1):
-                        # Speaker detection and management
-                        detected_speakers = gr.Textbox(
-                            label="🔍 Detected Speakers",
-                            interactive=False,
-                            lines=3,
-                            info="Speakers found in your script will appear here"
-                        )
-                        
-                        parse_script_btn = gr.Button(
-                            "🔍 Analyze Script",
-                            size="sm",
-                            variant="secondary"
-                        )
-                        
-                        conversation_help = gr.Markdown("""
-                        **📋 Script Format Guide:**
-                        - Each line: `SpeakerName: Dialogue text`
-                        - Speaker names are case-sensitive
-                        - Use consistent speaker names
-                        - Multi-line dialogue will be joined
-                        
-                        **🎭 Example:**
-                        ```
-                        Alice: Hello Bob!
-                        Bob: Hi Alice, how's it going?
-                        Alice: Great! I wanted to tell you about my trip.
-                        ```
-                        """)
-
-                # Dynamic speaker management section
-                with gr.Group():
-                    gr.Markdown("### 🎤 Speaker Voice Configuration")
-                    gr.Markdown("*Configure voice settings for each speaker in your conversation*")
-                    
-                    # Speaker configuration will be dynamically generated
-                    speaker_config_area = gr.HTML(
-                        value="<p style='text-align: center; color: #666; padding: 20px;'>📝 Enter a conversation script above and click 'Analyze Script' to configure speaker voices</p>"
+                        lines=8,
+                        info="Format: 'SpeakerName: Text' - Each line should start with speaker name followed by colon"
                     )
                     
-                    # Dynamic speaker controls container
-                    with gr.Row(visible=False) as speaker_controls_row:
-                        with gr.Column():
-                            # These will be dynamically created based on detected speakers
-                            speaker_audio_1 = gr.Audio(
-                                sources=["upload", "microphone"],
-                                type="filepath",
-                                label="🎤 Speaker 1 Voice",
-                                visible=False
-                            )
-                            speaker_audio_2 = gr.Audio(
-                                sources=["upload", "microphone"],
-                                type="filepath",
-                                label="🎤 Speaker 2 Voice",
-                                visible=False
-                            )
-                            speaker_audio_3 = gr.Audio(
-                                sources=["upload", "microphone"],
-                                type="filepath",
-                                label="🎤 Speaker 3 Voice",
-                                visible=False
-                            )
+                    # Conversation timing controls
+                    with gr.Row():
+                        conversation_pause = gr.Slider(
+                            0.2, 2.0, step=0.1,
+                            label="🔇 Speaker Change Pause (s)",
+                            value=0.8,
+                            info="Pause duration when speakers change"
+                        )
+                        speaker_transition_pause = gr.Slider(
+                            0.1, 1.0, step=0.1,
+                            label="⏸️ Same Speaker Pause (s)",
+                            value=0.3,
+                            info="Pause when same speaker continues"
+                        )
+                
+                with gr.Column(scale=1):
+                    # Speaker detection and management
+                    detected_speakers = gr.Textbox(
+                        label="🔍 Detected Speakers",
+                        interactive=False,
+                        lines=3,
+                        info="Speakers found in your script will appear here"
+                    )
+                    
+                    parse_script_btn = gr.Button(
+                        "🔍 Analyze Script",
+                        size="sm",
+                        variant="secondary"
+                    )
+                    
+                    conversation_help = gr.Markdown("""
+                    **📋 Script Format Guide:**
+                    - Each line: `SpeakerName: Dialogue text`
+                    - Speaker names are case-sensitive
+                    - Use consistent speaker names
+                    - Multi-line dialogue will be joined
+                    
+                    **🎭 Example:**
                             speaker_audio_4 = gr.Audio(
-                                sources=["upload", "microphone"],
-                                type="filepath",
-                                label="🎤 Speaker 4 Voice",
-                                visible=False
-                            )
-                            speaker_audio_5 = gr.Audio(
-                                sources=["upload", "microphone"],
-                                type="filepath",
-                                label="🎤 Speaker 5 Voice",
-                                visible=False
-                            )
-                        
-                        with gr.Column():
-                            # Language selection for each speaker
-                            speaker_lang_1 = gr.Dropdown(
-                                choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                                value="en",
-                                label="🌍 Speaker 1 Language",
-                                visible=False
-                            )
-                            speaker_lang_2 = gr.Dropdown(
-                                choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                                value="en",
-                                label="🌍 Speaker 2 Language",
-                                visible=False
-                            )
-                            speaker_lang_3 = gr.Dropdown(
-                                choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                                value="en",
-                                label="🌍 Speaker 3 Language",
-                                visible=False
-                            )
-                            speaker_lang_4 = gr.Dropdown(
-                                choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                                value="en",
-                                label="🌍 Speaker 4 Language",
-                                visible=False
-                            )
-                            speaker_lang_5 = gr.Dropdown(
-                                choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                                value="en",
-                                label="🌍 Speaker 5 Language",
-                                visible=False
-                            )
-                    
-                    # Hidden components to store speaker configurations
-                    speaker_settings_json = gr.Textbox(
-                        value="{}",
-                        visible=False,
-                        label="Speaker Settings JSON"
-                    )
-                    
-                    # Store current speakers for reference
-                    current_speakers = gr.State([])
-                    
-                    # Dynamic speaker controls (will be created programmatically)
-                    dynamic_speaker_controls = gr.State({})
-                
-                # Conversation generation controls
-                with gr.Row():
-                    generate_conversation_btn = gr.Button(
-                        "🎭 Generate Conversation",
-                        variant="primary",
-                        size="lg"
-                    )
-                    
-                    clear_conversation_btn = gr.Button(
-                        "🗑️ Clear Script",
-                        variant="secondary",
-                        size="sm"
-                    )
+    sources=["upload", "microphone"],
+    type="filepath",
+    label="🎤 Speaker 4 Voice",
+    visible=False
+)
+speaker_audio_5 = gr.Audio(
+    sources=["upload", "microphone"],
+    type="filepath",
+    label="🎤 Speaker 5 Voice",
+    visible=False
+)
 
-            # Voice Presets Section
-            with gr.Group():
-                gr.Markdown("### 🎭 Voice Presets")
-                gr.Markdown("*Save your complete voice setup including the reference audio file*")
-                
-                with gr.Row():
-                    preset_dropdown = gr.Dropdown(
-                        choices=initial_presets,
-                        label="Select Voice Preset",
-                        value=None,
-                        interactive=True
-                    )
-                    preset_name_input = gr.Textbox(
-                        label="New Voice Preset Name",
-                        placeholder="Enter preset name...",
-                        scale=1
-                    )
-                
-                with gr.Row():
-                    load_preset_btn = gr.Button("📥 Load Voice", size="sm")
-                    save_preset_btn = gr.Button("💾 Save Voice", size="sm", variant="secondary")
-                    delete_preset_btn = gr.Button("🗑️ Delete Voice", size="sm", variant="stop")
-                    refresh_btn = gr.Button("🔄 Refresh List", size="sm", variant="secondary")
-                
-                preset_status = gr.Textbox(label="Status", interactive=False, visible=True)
-                
-                # Show current preset file locations
-                with gr.Accordion("📁 File Locations", open=False):
-                    preset_path_info = gr.Textbox(
-                        label="Presets config saved to",
-                        value=os.path.abspath(PRESETS_FILE),
-                        interactive=False
-                    )
-                    audio_path_info = gr.Textbox(
-                        label="Voice audio files saved to",
-                        value=os.path.abspath(PRESETS_AUDIO_DIR),
-                        interactive=False
-                    )
+with gr.Column():
+    # Language selection for each speaker
+    speaker_lang_1 = gr.Dropdown(
+        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+        value="en",
+        label="🌍 Speaker 1 Language",
+        visible=False
+    )
+    speaker_lang_2 = gr.Dropdown(
+        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+        value="en",
+        label="🌍 Speaker 2 Language",
+        visible=False
+    )
+    speaker_lang_3 = gr.Dropdown(
+        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+        value="en",
+        label="🌍 Speaker 3 Language",
+        visible=False
+    )
+    speaker_lang_4 = gr.Dropdown(
+        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+        value="en",
+        label="🌍 Speaker 4 Language",
+        visible=False
+    )
+    speaker_lang_5 = gr.Dropdown(
+        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+        value="en",
+        label="🌍 Speaker 5 Language",
+        visible=False
+    )
 
-            # Main controls
+# Hidden components to store speaker configurations
+speaker_settings_json = gr.Textbox(
+    value="{}",
+    visible=False,
+    label="Speaker Settings JSON"
+)
+
+# Store current speakers for reference
+current_speakers = gr.State([])
+
+# Dynamic speaker controls (will be created programmatically)
+dynamic_speaker_controls = gr.State({})
+
+# Conversation generation controls
+with gr.Row():
+    generate_conversation_btn = gr.Button(
+        "🎭 Generate Conversation",
+        variant="primary",
+        size="lg"
+    )
+    clear_conversation_btn = gr.Button(
+        "🗑️ Clear Script",
+        variant="secondary",
+        size="sm"
+    )
+
+# Voice Presets Section
+with gr.Group():
+    gr.Markdown("### 🎭 Voice Presets")
+    gr.Markdown("*Save your complete voice setup including the reference audio file*")
+    
+    with gr.Row():
+        preset_dropdown = gr.Dropdown(
+            choices=initial_presets,
+            label="Select Voice Preset",
+            value=None,
+            interactive=True
+        )
+        preset_name_input = gr.Textbox(
+            label="New Voice Preset Name",
+            placeholder="Enter preset name...",
+            scale=1
+        )
+    
+    with gr.Row():
+        load_preset_btn = gr.Button("📥 Load Voice", size="sm")
+        save_preset_btn = gr.Button("💾 Save Voice", size="sm", variant="secondary")
+        delete_preset_btn = gr.Button("🗑️ Delete Voice", size="sm", variant="stop")
+        refresh_btn = gr.Button("🔄 Refresh List", size="sm", variant="secondary")
+    
+    preset_status = gr.Textbox(label="Status", interactive=False, visible=True)
+    
+    # Show current preset file locations
+    with gr.Accordion("📁 File Locations", open=False):
+        preset_path_info = gr.Textbox(
+            label="Presets config saved to",
+            value=os.path.abspath(PRESETS_FILE),
+            interactive=False
+        )
+        audio_path_info = gr.Textbox(
+            label="Voice audio files saved to",
+            value=os.path.abspath(PRESETS_AUDIO_DIR),
+            interactive=False
+        )
+
+# Main controls
 with gr.Row():
     exaggeration = gr.Slider(
         0.25, 2, step=.05, 
@@ -3486,11 +3477,25 @@ with gr.Row():
         value=.5,
         info="Higher values = more dramatic speech"
     )
+    speed_factor = gr.Slider(  # Added based on your earlier request
+        0.5, 2.0, step=0.1,
+        label="⏩ Speed Factor (Neutral = 1.0)",
+        value=1.0,
+        info="Controls speech speed (0.5 = slower, 2.0 = faster)"
+    )
+
+with gr.Row():
     cfg_weight = gr.Slider(
         0.2, 1, step=.05, 
         label="⚡ CFG/Pace", 
         value=0.5,
         info="Controls generation speed vs quality"
+    )
+    temp = gr.Slider(
+        0.05, 5, step=.05, 
+        label="🌡️ Temperature", 
+        value=.8,
+        info="Higher = more creative/varied"
     )
 
 with gr.Accordion("🔧 Advanced Settings", open=False):
@@ -3501,329 +3506,295 @@ with gr.Accordion("🔧 Advanced Settings", open=False):
             value=300,
             info="Smaller = more consistent, larger = fewer seams"
         )
-        temp = gr.Slider(
-            0.05, 5, step=.05, 
-            label="🌡️ Temperature", 
-            value=.8,
-            info="Higher = more creative/varied"
-        )
         seed_num = gr.Number(
             value=0, 
             label="🎲 Random seed (0 for random)",
             info="Use same seed for reproducible results"
         )
 
-# نیا سیکشن: وائس کنٹرول (Voice Controls)
-with gr.Accordion("🎙️ Voice Controls", open=False):
-    with gr.Row():
-        temperature = gr.Slider(
-            0.05, 1.5, step=0.01, 
-            label="🌡️ Temperature", 
-            value=0.7,
-            info="Controls randomness in speech (0.7 default)"
-        )
-        exaggeration_ctrl = gr.Slider(
-            0.0, 2.0, step=0.01, 
-            label="🎭 Exaggeration", 
-            value=0.4,
-            info="Adds dramatic effect to speech (0.4 default)"
-        )
-    with gr.Row():
-        cfg_weight_ctrl = gr.Slider(
-            0.0, 2.0, step=0.01, 
-            label="⚡ CFG Weight", 
-            value=0.6,
-            info="Balances generation speed and quality (0.6 default)"
-        )
-        speed_factor = gr.Slider(
-            0.25, 4.0, step=0.05, 
-            label="⏩ Speed Factor", 
-            value=1.0,
-            info="Adjusts speech speed (1.0 default)"
-        )
-            # Audio Effects Section
-            with gr.Accordion("🎵 Audio Effects & Processing", open=False):
-                gr.Markdown("### Professional audio effects and advanced processing")
-                
-                # Basic Effects Tab
-                with gr.Tab("🎭 Basic Effects"):
-                    with gr.Row():
-                        with gr.Column():
-                            enable_reverb = gr.Checkbox(label="🏛️ Enable Reverb", value=False)
-                            reverb_room = gr.Slider(0.1, 1.0, step=0.1, label="Room Size", value=0.3, visible=True)
-                            reverb_damping = gr.Slider(0.1, 1.0, step=0.1, label="Damping", value=0.5, visible=True)
-                            reverb_wet = gr.Slider(0.1, 0.8, step=0.1, label="Reverb Amount", value=0.3, visible=True)
-                        
-                        with gr.Column():
-                            enable_echo = gr.Checkbox(label="🔊 Enable Echo", value=False)
-                            echo_delay = gr.Slider(0.1, 1.0, step=0.1, label="Echo Delay (s)", value=0.3, visible=True)
-                            echo_decay = gr.Slider(0.1, 0.9, step=0.1, label="Echo Decay", value=0.5, visible=True)
-                        
-                        with gr.Column():
-                            enable_pitch = gr.Checkbox(label="🎼 Enable Pitch Shift", value=False)
-                            pitch_semitones = gr.Slider(-12, 12, step=1, label="Pitch (semitones)", value=0, visible=True)
-
-                # Advanced Processing Tab
-                with gr.Tab("🔧 Advanced Processing"):
-                    with gr.Row():
-                        with gr.Column():
-                            # Noise Reduction
-                            enable_noise_reduction = gr.Checkbox(label="🧹 Enable Noise Reduction", value=False)
-                            gr.Markdown("*Automatically clean up reference audio*")
-                        
-                        with gr.Column():
-                            # Audio Equalizer
-                            enable_equalizer = gr.Checkbox(label="🎛️ Enable Equalizer", value=False)
-                            gr.Markdown("*Fine-tune frequency bands*")
-                    
-                    # Equalizer Controls (shown when enabled)
-                    with gr.Group():
-                        gr.Markdown("#### 🎛️ 7-Band Equalizer (dB)")
-                        with gr.Row():
-                            eq_sub_bass = gr.Slider(-12, 12, step=1, label="Sub Bass\n(20-60 Hz)", value=0)
-                            eq_bass = gr.Slider(-12, 12, step=1, label="Bass\n(60-200 Hz)", value=0)
-                            eq_low_mid = gr.Slider(-12, 12, step=1, label="Low Mid\n(200-500 Hz)", value=0)
-                            eq_mid = gr.Slider(-12, 12, step=1, label="Mid\n(500-2k Hz)", value=0)
-                        with gr.Row():
-                            eq_high_mid = gr.Slider(-12, 12, step=1, label="High Mid\n(2k-4k Hz)", value=0)
-                            eq_presence = gr.Slider(-12, 12, step=1, label="Presence\n(4k-8k Hz)", value=0)
-                            eq_brilliance = gr.Slider(-12, 12, step=1, label="Brilliance\n(8k-20k Hz)", value=0)
-
-                # 3D Spatial Audio Tab
-                with gr.Tab("🎧 3D Spatial Audio"):
-                    enable_spatial = gr.Checkbox(label="🎧 Enable 3D Spatial Positioning", value=False)
-                    gr.Markdown("*Position voices in 3D space for immersive experiences*")
-                    
-                    with gr.Row():
-                        with gr.Column():
-                            spatial_azimuth = gr.Slider(
-                                -180, 180, step=5, 
-                                label="🧭 Azimuth (degrees)", 
-                                value=0,
-                                info="Left-Right positioning (-180° to 180°)"
-                            )
-                            spatial_elevation = gr.Slider(
-                                -90, 90, step=5, 
-                                label="📐 Elevation (degrees)", 
-                                value=0,
-                                info="Up-Down positioning (-90° to 90°)"
-                            )
-                        with gr.Column():
-                            spatial_distance = gr.Slider(
-                                0.1, 5.0, step=0.1, 
-                                label="📏 Distance", 
-                                value=1.0,
-                                info="Distance from listener (0.1 = close, 5.0 = far)"
-                            )
-                            gr.Markdown("""
-                            **Quick Presets:**
-                            - Center: Az=0°, El=0°, Dist=1.0
-                            - Left: Az=-90°, El=0°, Dist=1.0  
-                            - Right: Az=90°, El=0°, Dist=1.0
-                            - Above: Az=0°, El=45°, Dist=1.0
-                            - Distant: Az=0°, El=0°, Dist=3.0
-                            """)
-
-                # Background Music Mixer Tab
-                with gr.Tab("🎵 Background Music"):
-                    enable_background = gr.Checkbox(label="🎵 Enable Background Music/Ambience", value=False)
-                    gr.Markdown("*Blend generated speech with background audio*")
-                    
-                    with gr.Row():
-                        with gr.Column():
-                            background_path = gr.Audio(
-                                sources=["upload"],
-                                type="filepath",
-                                label="🎼 Background Audio File"
-                            )
-                            gr.Markdown("*Upload music, ambience, or sound effects*")
-                            
-                        with gr.Column():
-                            bg_volume = gr.Slider(
-                                0.0, 1.0, step=0.05, 
-                                label="🔊 Background Volume", 
-                                value=0.3,
-                                info="Volume of background audio"
-                            )
-                            speech_volume = gr.Slider(
-                                0.0, 2.0, step=0.05, 
-                                label="🗣️ Speech Volume", 
-                                value=1.0,
-                                info="Volume of generated speech"
-                            )
-                    
-                    with gr.Row():
-                        bg_fade_in = gr.Slider(
-                            0.0, 5.0, step=0.1, 
-                            label="📈 Fade In (seconds)", 
-                            value=1.0,
-                            info="Background fade-in duration"
-                        )
-                        bg_fade_out = gr.Slider(
-                            0.0, 5.0, step=0.1, 
-                            label="📉 Fade Out (seconds)", 
-                            value=1.0,
-                            info="Background fade-out duration"
-                        )
-                    
-                    gr.Markdown("""
-                    **Background Audio Tips:**
-                    - **Music**: Use instrumental tracks, keep volume low (0.2-0.4)
-                    - **Ambience**: Nature sounds, room tone, atmospheric audio
-                    - **SFX**: Sound effects that complement the speech content
-                    - **Looping**: Short audio files will automatically loop to match speech length
-                    """)
-
-            # Generate button
-            run_btn = gr.Button(
-                "🚀 Generate Speech", 
-                variant="primary", 
-                size="lg"
-            )
-
-        with gr.Column(scale=1):
-            # Enhanced Audio Output with Waveform Visualization
-            with gr.Group():
-                gr.Markdown("### 🎵 Generated Audio & Waveform Analysis")
-                
-                # Main audio output
-                audio_output = gr.Audio(
-                    label="🎵 Generated Audio",
-                    show_download_button=True,
-                    waveform_options=gr.WaveformOptions(
-                        waveform_color="#4CAF50",
-                        waveform_progress_color="#45a049",
-                        show_recording_waveform=True,
-                        skip_length=5,
-                        sample_rate=22050
-                    )
-                )
-                
-                # Waveform analysis info
-                waveform_info = gr.Textbox(
-                    label="📊 Audio Analysis",
-                    lines=4,
-                    interactive=False,
-                    placeholder="Audio analysis will appear here after generation..."
-                )
-                
-                # Waveform controls
-                with gr.Row():
-                    analyze_btn = gr.Button("📊 Analyze Audio", size="sm", variant="secondary")
-                    clear_analysis_btn = gr.Button("🗑️ Clear Analysis", size="sm", variant="stop")
+# Audio Effects Section
+with gr.Accordion("🎵 Audio Effects & Processing", open=False):
+    gr.Markdown("### Professional audio effects and advanced processing")
+    
+    # Basic Effects Tab
+    with gr.Tab("🎭 Basic Effects"):
+        with gr.Row():
+            with gr.Column():
+                enable_reverb = gr.Checkbox(label="🏛️ Enable Reverb", value=False)
+                reverb_room = gr.Slider(0.1, 1.0, step=0.1, label="Room Size", value=0.3, visible=True)
+                reverb_damping = gr.Slider(0.1, 1.0, step=0.1, label="Damping", value=0.5, visible=True)
+                reverb_wet = gr.Slider(0.1, 0.8, step=0.1, label="Reverb Amount", value=0.3, visible=True)
             
-            # Export Options
-            with gr.Accordion("📤 Export Options", open=False):
-                gr.Markdown("### 📥 Export your audio as WAV files")
-                gr.Markdown("*Download your generated speech in different qualities and formats*")
+            with gr.Column():
+                enable_echo = gr.Checkbox(label="🔊 Enable Echo", value=False)
+                echo_delay = gr.Slider(0.1, 1.0, step=0.1, label="Echo Delay (s)", value=0.3, visible=True)
+                echo_decay = gr.Slider(0.1, 0.9, step=0.1, label="Echo Decay", value=0.5, visible=True)
+            
+            with gr.Column():
+                enable_pitch = gr.Checkbox(label="🎼 Enable Pitch Shift", value=False)
+                pitch_semitones = gr.Slider(-12, 12, step=1, label="Pitch (semitones)", value=0, visible=True)
+
+    # Advanced Processing Tab
+    with gr.Tab("🔧 Advanced Processing"):
+        with gr.Row():
+            with gr.Column():
+                # Noise Reduction
+                enable_noise_reduction = gr.Checkbox(label="🧹 Enable Noise Reduction", value=False)
+                gr.Markdown("*Automatically clean up reference audio*")
+            
+            with gr.Column():
+                # Audio Equalizer
+                enable_equalizer = gr.Checkbox(label="🎛️ Enable Equalizer", value=False)
+                gr.Markdown("*Fine-tune frequency bands*")
+        
+        # Equalizer Controls (shown when enabled)
+        with gr.Group():
+            gr.Markdown("#### 🎛️ 7-Band Equalizer (dB)")
+            with gr.Row():
+                eq_sub_bass = gr.Slider(-12, 12, step=1, label="Sub Bass\n(20-60 Hz)", value=0)
+                eq_bass = gr.Slider(-12, 12, step=1, label="Bass\n(60-200 Hz)", value=0)
+                eq_low_mid = gr.Slider(-12, 12, step=1, label="Low Mid\n(200-500 Hz)", value=0)
+                eq_mid = gr.Slider(-12, 12, step=1, label="Mid\n(500-2k Hz)", value=0)
+            with gr.Row():
+                eq_high_mid = gr.Slider(-12, 12, step=1, label="High Mid\n(2k-4k Hz)", value=0)
+                eq_presence = gr.Slider(-12, 12, step=1, label="Presence\n(4k-8k Hz)", value=0)
+                eq_brilliance = gr.Slider(-12, 12, step=1, label="Brilliance\n(8k-20k Hz)", value=0)
+
+    # 3D Spatial Audio Tab
+    with gr.Tab("🎧 3D Spatial Audio"):
+        enable_spatial = gr.Checkbox(label="🎧 Enable 3D Spatial Positioning", value=False)
+        gr.Markdown("*Position voices in 3D space for immersive experiences*")
+        
+        with gr.Row():
+            with gr.Column():
+                spatial_azimuth = gr.Slider(
+                    -180, 180, step=5, 
+                    label="🧭 Azimuth (degrees)", 
+                    value=0,
+                    info="Left-Right positioning (-180° to 180°)"
+                )
+                spatial_elevation = gr.Slider(
+                    -90, 90, step=5, 
+                    label="📐 Elevation (degrees)", 
+                    value=0,
+                    info="Up-Down positioning (-90° to 90°)"
+                )
+            with gr.Column():
+                spatial_distance = gr.Slider(
+                    0.1, 5.0, step=0.1, 
+                    label="📏 Distance", 
+                    value=1.0,
+                    info="Distance from listener (0.1 = close, 5.0 = far)"
+                )
+                gr.Markdown("""
+                **Quick Presets:**
+                - Center: Az=0°, El=0°, Dist=1.0
+                - Left: Az=-90°, El=0°, Dist=1.0  
+                - Right: Az=90°, El=0°, Dist=1.0
+                - Above: Az=0°, El=45°, Dist=1.0
+                - Distant: Az=0°, El=0°, Dist=3.0
+                """)
+
+    # Background Music Mixer Tab
+    with gr.Tab("🎵 Background Music"):
+        enable_background = gr.Checkbox(label="🎵 Enable Background Music/Ambience", value=False)
+        gr.Markdown("*Blend generated speech with background audio*")
+        
+        with gr.Row():
+            with gr.Column():
+                background_path = gr.Audio(
+                    sources=["upload"],
+                    type="filepath",
+                    label="🎼 Background Audio File"
+                )
+                gr.Markdown("*Upload music, ambience, or sound effects*")
                 
-                with gr.Row():
-                    with gr.Column():
-                        export_quality = gr.Radio(
-                            choices=[
-                                ("🎵 High Quality (16-bit, full sample rate)", "high"),
-                                ("⚖️ Medium Quality (16-bit, half sample rate)", "medium"), 
-                                ("💾 Low Quality (16-bit, quarter sample rate)", "low")
-                            ],
-                            value="high",
-                            label="Export Quality",
-                            info="Choose quality vs file size trade-off"
-                        )
-                        
-                    with gr.Column():
-                        gr.Markdown("""
-                        **Quality Guide:**
-                        - **High**: Best quality, largest file (~3-5MB/min)
-                        - **Medium**: Good quality, balanced size (~1-2MB/min)
-                        - **Low**: Smallest file, acceptable quality (~0.5MB/min)
-                        """)
-                
-                with gr.Row():
-                    export_btn = gr.Button(
-                        "📥 Export Audio as WAV", 
-                        variant="primary", 
-                        size="lg",
-                        scale=2
-                    )
-                    gr.HTML("<div style='width: 20px;'></div>")  # Spacer
-                
-                export_status = gr.Textbox(
-                    label="📋 Export Status", 
-                    interactive=False,
-                    placeholder="Export status will appear here...",
-                    lines=2
+            with gr.Column():
+                bg_volume = gr.Slider(
+                    0.0, 1.0, step=0.05, 
+                    label="🔊 Background Volume", 
+                    value=0.3,
+                    info="Volume of background audio"
+                )
+                speech_volume = gr.Slider(
+                    0.0, 2.0, step=0.05, 
+                    label="🗣️ Speech Volume", 
+                    value=1.0,
+                    info="Volume of generated speech"
+                )
+        
+        with gr.Row():
+            bg_fade_in = gr.Slider(
+                0.0, 5.0, step=0.1, 
+                label="📈 Fade In (seconds)", 
+                value=1.0,
+                info="Background fade-in duration"
+            )
+            bg_fade_out = gr.Slider(
+                0.0, 5.0, step=0.1, 
+                label="📉 Fade Out (seconds)", 
+                value=1.0,
+                info="Background fade-out duration"
+            )
+        
+        gr.Markdown("""
+        **Background Audio Tips:**
+        - **Music**: Use instrumental tracks, keep volume low (0.2-0.4)
+        - **Ambience**: Nature sounds, room tone, atmospheric audio
+        - **SFX**: Sound effects that complement the speech content
+        - **Looping**: Short audio files will automatically loop to match speech length
+        """)
+
+# Generate button
+run_btn = gr.Button(
+    "🚀 Generate Speech", 
+    variant="primary", 
+    size="lg"
+)
+
+with gr.Column(scale=1):
+    # Enhanced Audio Output with Waveform Visualization
+    with gr.Group():
+        gr.Markdown("### 🎵 Generated Audio & Waveform Analysis")
+        
+        # Main audio output
+        audio_output = gr.Audio(
+            label="🎵 Generated Audio",
+            show_download_button=True,
+            waveform_options=gr.WaveformOptions(
+                waveform_color="#4CAF50",
+                waveform_progress_color="#45a049",
+                show_recording_waveform=True,
+                skip_length=5,
+                sample_rate=22050
+            )
+        )
+        
+        # Waveform analysis info
+        waveform_info = gr.Textbox(
+            label="📊 Audio Analysis",
+            lines=4,
+            interactive=False,
+            placeholder="Audio analysis will appear here after generation..."
+        )
+        
+        # Waveform controls
+        with gr.Row():
+            analyze_btn = gr.Button("📊 Analyze Audio", size="sm", variant="secondary")
+            clear_analysis_btn = gr.Button("🗑️ Clear Analysis", size="sm", variant="stop")
+
+    # Export Options
+    with gr.Accordion("📤 Export Options", open=False):
+        gr.Markdown("### 📥 Export your audio as WAV files")
+        gr.Markdown("*Download your generated speech in different qualities and formats*")
+        
+        with gr.Row():
+            with gr.Column():
+                export_quality = gr.Radio(
+                    choices=[
+                        ("🎵 High Quality (16-bit, full sample rate)", "high"),
+                        ("⚖️ Medium Quality (16-bit, half sample rate)", "medium"), 
+                        ("💾 Low Quality (16-bit, quarter sample rate)", "low")
+                    ],
+                    value="high",
+                    label="Export Quality",
+                    info="Choose quality vs file size trade-off"
                 )
                 
-                # Show export folder location
-                with gr.Accordion("📁 Export Location", open=False):
-                    export_path_info = gr.Textbox(
-                        label="Files exported to",
-                        value=os.path.abspath(EXPORT_DIR),
-                        interactive=False,
-                        info="All exported files are saved to this directory"
-                    )
-                    gr.Markdown("**Note**: Files are automatically named with timestamp for easy organization.")
+            with gr.Column():
+                gr.Markdown("""
+                **Quality Guide:**
+                - **High**: Best quality, largest file (~3-5MB/min)
+                - **Medium**: Good quality, balanced size (~1-2MB/min)
+                - **Low**: Smallest file, acceptable quality (~0.5MB/min)
+                """)
+        
+        with gr.Row():
+            export_btn = gr.Button(
+                "📥 Export Audio as WAV", 
+                variant="primary", 
+                size="lg",
+                scale=2
+            )
+            gr.HTML("<div style='width: 20px;'></div>")  # Spacer
+        
+        export_status = gr.Textbox(
+            label="📋 Export Status", 
+            interactive=False,
+            placeholder="Export status will appear here...",
+            lines=2
+        )
+        
+        # Show export folder location
+        with gr.Accordion("📁 Export Location", open=False):
+            export_path_info = gr.Textbox(
+                label="Files exported to",
+                value=os.path.abspath(EXPORT_DIR),
+                interactive=False,
+                info="All exported files are saved to this directory"
+            )
+            gr.Markdown("**Note**: Files are automatically named with timestamp for easy organization.")
 
-            # Tips and info
-            with gr.Accordion("💡 Tips & Best Practices", open=False):
-                gr.Markdown(
-                    """
-                💡 Pro Tips
-                - **On-demand loading**: Models load only when you generate speech (no startup downloads)
-                - **Long text**: Automatically chunked for best quality
-                - **Voice presets**: Save your favorite combinations
-                - **Model download**: Use the download section at the top to get multilingual models (~2-4GB)
-                - **Multilingual mode**: Enable for 23 language support (Arabic, Chinese, French, Spanish, etc.)
-                - **Language matching**: Match reference audio language to target language for best results
-                - **Conversation mode**: Generate multi-speaker dialogues with different voices
-                - **Basic effects**: Add reverb for space, echo for depth, pitch shift for character
-                - **Noise reduction**: Automatically cleans up noisy reference audio
-                - **Equalizer**: Boost presence (4-8kHz) for clarity, adjust bass for warmth
-                - **3D spatial**: Create immersive positioning for podcasts/games
-                - **Background music**: Keep volume low (0.2-0.4) for speech clarity
-                - **Export**: Download in different qualities
-                - **Waveform**: Analyze audio characteristics and quality
-                
-                ### 🎯 Best Practices
-                - Use clear reference audio (3-10 seconds)
-                - Keep exaggeration moderate (0.3-0.8)
-                - Try temperature 0.6-1.0 for natural speech
-                - Use smaller chunks for consistent quality
-                - Apply noise reduction to poor quality reference audio
-                - Use EQ to enhance specific voice characteristics
-                - Position voices spatially for immersive experiences
-                - Analyze waveform to understand audio quality
-                
-                ### 🌍 Multilingual Best Practices
-                - **Language matching**: Reference audio should match target language
-                - **CFG weight**: Lower (0.3) if reference has different language accent
-                - **Supported languages**: 23 languages from Arabic to Chinese
-                - **Quality**: Multilingual model maintains high quality across all languages
-                - **Mixed conversations**: Each speaker in conversation mode can use a different language
-                
-                ### 🎭 Voice Conversation Mode Guide
-                - **Script Format**: Use `SpeakerName: Dialogue text` format
-                - **Individual Audio**: Upload different reference audio for each speaker
-                - **Per-Speaker Languages**: Each speaker can use a different language (23 languages supported)
-                - **Auto-Detection**: Speakers are automatically detected and audio upload slots appear
-                - **Timing Control**: Adjust pauses between speakers and within speaker turns
-                - **Voice Variety**: Each speaker can have completely different voice characteristics
-                - **Consistent Names**: Keep speaker names exactly the same throughout
-                - **Preset Integration**: Presets with matching speaker names load automatically
-                - **Natural Flow**: Longer pauses for speaker changes, shorter for continuations
-                - **Max Speakers**: Supports up to 5 different speakers per conversation
-                
-                ### 🎵 Audio Effects Guide
-                - **Reverb**: Simulates room acoustics (church, hall, studio)
-                - **Echo**: Adds depth and space to voice
-                - **Pitch**: Change voice character (±12 semitones)
-                - **Noise Reduction**: Clean background noise from reference
-                - **Equalizer**: Shape frequency response for desired tone
-                - **3D Spatial**: Position voice in 3D space for VR/AR
-                - **Background**: Mix with music/ambience for atmosphere
-                - **Waveform Analysis**: Understand audio characteristics and quality
-                
-                ### 📝 Conversation Examples
+    # Tips and info
+    with gr.Accordion("💡 Tips & Best Practices", open=False):
+        gr.Markdown(
+            """
+            💡 Pro Tips
+            - **On-demand loading**: Models load only when you generate speech (no startup downloads)
+            - **Long text**: Automatically chunked for best quality
+            - **Voice presets**: Save your favorite combinations
+            - **Model download**: Use the download section at the top to get multilingual models (~2-4GB)
+            - **Multilingual mode**: Enable for 23 language support (Arabic, Chinese, French, Spanish, etc.)
+            - **Language matching**: Match reference audio language to target language for best results
+            - **Conversation mode**: Generate multi-speaker dialogues with different voices
+            - **Basic effects**: Add reverb for space, echo for depth, pitch shift for character
+            - **Noise reduction**: Automatically cleans up noisy reference audio
+            - **Equalizer**: Boost presence (4-8kHz) for clarity, adjust bass for warmth
+            - **3D spatial**: Create immersive positioning for podcasts/games
+            - **Background music**: Keep volume low (0.2-0.4) for speech clarity
+            - **Export**: Download in different qualities
+            - **Waveform**: Analyze audio characteristics and quality
+            
+            ### 🎯 Best Practices
+            - Use clear reference audio (3-10 seconds)
+            - Keep exaggeration moderate (0.3-0.8)
+            - Try temperature 0.6-1.0 for natural speech
+            - Use smaller chunks for consistent quality
+            - Apply noise reduction to poor quality reference audio
+            - Use EQ to enhance specific voice characteristics
+            - Position voices spatially for immersive experiences
+            - Analyze waveform to understand audio quality
+            
+            ### 🌍 Multilingual Best Practices
+            - **Language matching**: Reference audio should match target language
+            - **CFG weight**: Lower (0.3) if reference has different language accent
+            - **Supported languages**: 23 languages from Arabic to Chinese
+            - **Quality**: Multilingual model maintains high quality across all languages
+            - **Mixed conversations**: Each speaker in conversation mode can use a different language
+            
+            ### 🎭 Voice Conversation Mode Guide
+            - **Script Format**: Use `SpeakerName: Dialogue text` format
+            - **Individual Audio**: Upload different reference audio for each speaker
+            - **Per-Speaker Languages**: Each speaker can use a different language (23 languages supported)
+            - **Auto-Detection**: Speakers are automatically detected and audio upload slots appear
+            - **Timing Control**: Adjust pauses between speakers and within speaker turns
+            - **Voice Variety**: Each speaker can have completely different voice characteristics
+            - **Consistent Names**: Keep speaker names exactly the same throughout
+            - **Preset Integration**: Presets with matching speaker names load automatically
+            - **Natural Flow**: Longer pauses for speaker changes, shorter for continuations
+            - **Max Speakers**: Supports up to 5 different speakers per conversation
+            
+            ### 🎵 Audio Effects Guide
+            - **Reverb**: Simulates room acoustics (church, hall, studio)
+            - **Echo**: Adds depth and space to voice
+            - **Pitch**: Change voice character (±12 semitones)
+            - **Noise Reduction**: Clean background noise from reference
+            - **Equalizer**: Shape frequency response for desired tone
+            - **3D Spatial**: Position voice in 3D space for VR/AR
+            - **Background**: Mix with music/ambience for atmosphere
+            - **Waveform Analysis**: Understand audio characteristics and quality
+            
+            ### 📝 Conversation Examples
                 ```
                 Alice: Welcome to our podcast! I'm Alice.
                 Bob: And I'm Bob. Today we're discussing AI.
@@ -3838,576 +3809,577 @@ with gr.Accordion("🎙️ Voice Controls", open=False):
                 Hero: We'll see about that!
                 ```
                 """
-                )
-        
-        # Video Dubbing Tab (new functionality)
-        with gr.Tab("🎬 Video Dubbing", id="dubbing_tab"):
-            gr.Markdown("""
-            # 🎬 AI Video Dubbing System
-            **Automatically dub videos into multiple languages with AI translation and voice synthesis**
-            
-            Upload a video, select target languages, and get professionally dubbed versions with synchronized audio!
-            """)
-            
-            # API Management Section
-            with gr.Accordion("🔑 API Management", open=True):
-                gr.Markdown("""
-                ### 🧠 Gemini API Configuration
-                Add your Google Gemini API keys for translation. Multiple keys enable load balancing and redundancy.
-                """)
-                
-                with gr.Row():
-                    with gr.Column(scale=2):
-                        api_name_input = gr.Textbox(
-                            label="🏷️ API Name (Optional)",
-                            placeholder="My Gemini API",
-                            info="Give your API a friendly name"
-                        )
-                        api_key_input = gr.Textbox(
-                            label="🔑 Gemini API Key",
-                            placeholder="Enter your Google Gemini API key...",
-                            type="password",
-                            info="Get your API key from Google AI Studio"
-                        )
-                    
-                    with gr.Column(scale=1):
-                        add_api_btn = gr.Button(
-                            "➕ Add API Key",
-                            variant="primary",
-                            size="lg"
-                        )
-                        
-                        api_status_display = gr.Textbox(
-                            label="📊 API Status",
-                            value=get_api_status(),
-                            interactive=False,
-                            lines=3
-                        )
-                
-                gr.Markdown("""
-                **💡 API Tips:**
-                - Get free API keys from [Google AI Studio](https://aistudio.google.com/app/apikey)
-                - Multiple keys provide redundancy and higher rate limits
-                - Keys are used in round-robin fashion for load balancing
-                """)
-            
-            # Main Dubbing Interface
-            with gr.Row():
-                with gr.Column(scale=2):
-                    # Video Upload
-                    video_input = gr.Video(
-                        label="🎬 Upload Video File"
-                    )
-                    gr.Markdown("*Supported formats: MP4, AVI, MOV, MKV*")
-                    
-                    # Language Selection
-                    with gr.Group():
-                        gr.Markdown("### 🌍 Target Languages")
-                        target_languages = gr.CheckboxGroup(
-                            choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
-                            label="🗣️ Select Languages for Dubbing",
-                            info="Choose one or more languages for dubbing",
-                            value=["es", "fr"]  # Default to Spanish and French
-                        )
-                    
-                    # Reference Audio Upload
-                    with gr.Accordion("🎤 Reference Audio (Optional)", open=False):
-                        gr.Markdown("""
-                        ### 🎙️ Upload Reference Audio for Voice Cloning
-                        Upload a reference audio file to clone the voice for each language.
-                        This will make the dubbed voice sound more like the reference speaker.
-                        """)
-                        
-                        reference_audio_upload = gr.Audio(
-                            label="🎤 Upload Reference Audio (10-30 seconds recommended)",
-                            type="filepath"
-                        )
-                        
-                        gr.Markdown("""
-                        **💡 Reference Audio Tips:**
-                        - Use clear, high-quality audio (no background noise)
-                        - 10-30 seconds of speech is optimal
-                        - The same reference will be used for all selected languages
-                        - Leave empty to use default voice for each language
-                        """)
-                    
-                    # Translation Customization
-                    with gr.Accordion("🎨 Translation Style", open=False):
-                        custom_prompt = gr.Textbox(
-                            label="✨ Custom Translation Prompt",
-                            placeholder="e.g., 'Translate in a formal tone' or 'Use casual, friendly language'",
-                            lines=3,
-                            info="Optional: Add specific instructions for translation style"
-                        )
-                        
-                        gr.Markdown("""
-                        **Style Examples:**
-                        - "Translate in a formal, professional tone"
-                        - "Use casual, conversational language"
-                        - "Maintain the original humor and personality"
-                        - "Adapt cultural references for the target audience"
-                        """)
-                    
-                    # Processing Button
-                    process_dubbing_btn = gr.Button(
-                        "🚀 Start Dubbing Process",
-                        variant="primary",
-                        size="lg"
-                    )
-                
-                with gr.Column(scale=1):
-                    # Output and Status
-                    with gr.Group():
-                        gr.Markdown("### 📤 Dubbed Video Output")
-                        
-                        dubbed_video_output = gr.Video(
-                            label="🎬 Dubbed Video"
-                        )
-                        gr.Markdown("*Preview of the first dubbed video*")
-                        
-                        dubbing_status = gr.Textbox(
-                            label="📊 Processing Status",
-                            lines=8,
-                            interactive=False,
-                            placeholder="Upload a video and click 'Start Dubbing Process' to begin..."
-                        )
-                    
-                    # Processing Steps Info
-                    with gr.Accordion("🔄 Processing Pipeline", open=False):
-                        gr.Markdown("""
-                        ### 🛠️ Dubbing Process Steps:
-                        
-                        1. **🎵 Audio Extraction**
-                           - Extract audio track from video using FFmpeg
-                        
-                        2. **🎤 Speech Recognition**
-                           - Transcribe audio with timestamps using Parakeet TDT
-                           - Generate segment-level timing information
-                        
-                        3. **🌍 Translation**
-                           - Translate each segment using Gemini AI
-                           - Preserve timing and context information
-                           - Apply custom style instructions
-                        
-                        4. **🗣️ Voice Synthesis**
-                           - Generate TTS for each translated segment
-                           - Adjust audio speed to match original timing
-                           - Use Chatterbox multilingual TTS
-                        
-                        5. **🎬 Video Assembly**
-                           - Combine new audio with original video
-                           - Maintain video quality and synchronization
-                           - Export final dubbed videos
-                        """)
-            
-            # Real-time Progress Tracking - Always Visible
-            gr.Markdown("## 📊 Live Processing Progress")
-            
-            # Step 1: Transcription Progress
-            with gr.Group():
-                gr.Markdown("### 🎤 Step 1: Video Transcription")
-                with gr.Row():
-                    transcription_status = gr.Textbox(
-                        label="📝 Transcription Status",
-                        value="⏳ Waiting for video upload...",
-                        interactive=False,
-                        lines=2
-                    )
-                    parakeet_model_status = gr.Textbox(
-                        label="🤖 Parakeet Model Status", 
-                        value="💤 Model not loaded",
-                        interactive=False,
-                        lines=2
-                    )
-                
-                transcript_display = gr.HTML(
-                    label="📋 Timestamped Transcript",
-                    value="<div style='padding: 20px; text-align: center; color: #666;'>Transcript will appear here after processing...</div>"
-                )
-            
-            # Step 2: Translation Progress  
-            with gr.Group():
-                gr.Markdown("### 🌍 Step 2: Smart Chunked Translation")
-                with gr.Row():
-                    with gr.Column():
-                        translation_status = gr.Textbox(
-                            label="🔄 Translation Status",
-                            value="⏳ Waiting for transcription...",
-                            interactive=False,
-                            lines=3
-                        )
-                    with gr.Column():
-                        chunk_progress = gr.Textbox(
-                            label="📦 Chunk Progress",
-                            value="📊 No chunks created yet",
-                            interactive=False,
-                            lines=3
-                        )
-                
-                # Translation results for each language
-                translation_results = gr.HTML(
-                    label="📝 Translation Results by Language",
-                    value="<div style='padding: 20px; text-align: center; color: #666;'>Translation results will appear here...</div>"
-                )
-            
-            # Step 3: TTS Generation Progress
-            with gr.Group():
-                gr.Markdown("### 🗣️ Step 3: Voice Synthesis (Chatterbox TTS)")
-                with gr.Row():
-                    with gr.Column():
-                        tts_status = gr.Textbox(
-                            label="🎙️ TTS Generation Status",
-                            value="⏳ Waiting for translation...",
-                            interactive=False,
-                            lines=3
-                        )
-                    with gr.Column():
-                        audio_processing_status = gr.Textbox(
-                            label="🔧 Audio Processing",
-                            value="⏳ Speed adjustment pending...",
-                            interactive=False,
-                            lines=3
-                        )
-                
-                tts_results = gr.HTML(
-                    label="🎵 Generated Audio Segments",
-                    value="<div style='padding: 20px; text-align: center; color: #666;'>TTS results will appear here...</div>"
-                )
-            
-            # Step 4: Final Video Assembly
-            with gr.Group():
-                gr.Markdown("### 🎬 Step 4: Video Assembly & Output")
-                with gr.Row():
-                    video_assembly_status = gr.Textbox(
-                        label="🎞️ Video Assembly Status",
-                        value="⏳ Waiting for audio generation...",
-                        interactive=False,
-                        lines=2
-                    )
-                    final_output_status = gr.Textbox(
-                        label="📁 Output Files Status",
-                        value="📋 No files generated yet",
-                        interactive=False,
-                        lines=2
-                    )
-                
-                # Final output files display
-                output_files_display = gr.HTML(
-                    label="📥 Download Links",
-                    value="<div style='padding: 20px; text-align: center; color: #666;'>Download links will appear here...</div>"
-                )
-            
-            # Requirements and Tips
-            with gr.Accordion("📋 Requirements & Tips", open=False):
-                gr.Markdown("""
-                ### 🔧 System Requirements:
-                - **Parakeet ASR**: `pip install nemo_toolkit[asr]`
-                - **Gemini API**: Valid API key from Google AI Studio
-                - **FFmpeg**: For video/audio processing
-                - **Chatterbox Models**: Download multilingual models above
-                
-                ### 💡 Best Practices:
-                - **Video Quality**: Use clear audio with minimal background noise
-                - **Language Support**: 23 languages supported for dubbing
-                - **File Size**: Larger videos take longer to process
-                - **API Limits**: Multiple API keys help with rate limiting
-                - **Custom Prompts**: Use specific style instructions for better results
-                
-                ### 🎯 Optimal Results:
-                - Videos with clear speech work best
-                - Avoid videos with heavy music or sound effects
-                - Single speaker videos produce most accurate results
-                - Consider video length for processing time
-                """)
+)
 
-    # Hidden components for waveform analysis
-    waveform_data = gr.State(None)
+# Video Dubbing Tab (new functionality)
+with gr.Tab("🎬 Video Dubbing", id="dubbing_tab"):
+gr.Markdown("""
+# 🎬 AI Video Dubbing System
+**Automatically dub videos into multiple languages with AI translation and voice synthesis**
 
-    # Language dropdown is always visible now
-    
-    # Model download event handlers
-    check_models_btn.click(
-        fn=check_model_files_status,
-        outputs=[model_status_display]
+Upload a video, select target languages, and get professionally dubbed versions with synchronized audio!
+""")
+
+# API Management Section
+with gr.Accordion("🔑 API Management", open=True):
+gr.Markdown("""
+### 🧠 Gemini API Configuration
+Add your Google Gemini API keys for translation. Multiple keys enable load balancing and redundancy.
+""")
+
+with gr.Row():
+with gr.Column(scale=2):
+    api_name_input = gr.Textbox(
+        label="🏷️ API Name (Optional)",
+        placeholder="My Gemini API",
+        info="Give your API a friendly name"
     )
-    
-    def start_download():
-        """Start the download and return initial status."""
-        download_models_async()
-        return "📥 Starting download..."
-    
-    def download_complete_handler():
-        """Handle download completion and update UI."""
-        return (
-            get_download_status(),
-            check_model_loaded_status(),
-            gr.update(visible=should_show_load_button())
-        )
-    
-    download_models_btn.click(
-        fn=start_download,
-        outputs=[download_progress_display]
-    )
-    
-    def load_model_and_update_status():
-        """Load model and return status updates."""
-        status_msg, success = load_model_manually()
-        return status_msg, gr.update(visible=not success)
-    
-    load_model_btn.click(
-        fn=load_model_and_update_status,
-        outputs=[model_loading_status, load_model_btn]
-    )
-    
-    def refresh_all_status():
-        """Refresh all status displays and button visibility."""
-        return (
-            check_model_files_status(),
-            get_download_status(),
-            check_model_loaded_status(),
-            gr.update(visible=should_show_load_button())
-        )
-    
-    refresh_status_btn.click(
-        fn=refresh_all_status,
-        outputs=[model_status_display, download_progress_display, model_loading_status, load_model_btn]
-    )
-    
-    # Auto-refresh download progress every 2 seconds when downloading
-    def auto_refresh_download_status():
-        status = download_status["status"]
-        if status == "downloading":
-            return get_download_status()
-        return gr.update()
-    
-    # Initialize status displays on app load
-    demo.load(
-        fn=lambda: (check_model_files_status(), get_download_status(), check_model_loaded_status(), gr.update(visible=should_show_load_button())),
-        outputs=[model_status_display, download_progress_display, model_loading_status, load_model_btn]
+    api_key_input = gr.Textbox(
+        label="🔑 Gemini API Key",
+        placeholder="Enter your Google Gemini API key...",
+        type="password",
+        info="Get your API key from Google AI Studio"
     )
 
-    # Event handlers
-    run_btn.click(
-        fn=generate_tts_audio,
-        inputs=[
-            text, ref_wav, exaggeration, temp, seed_num, cfg_weight, chunk_size,
-            language_dropdown,
-            enable_reverb, reverb_room, reverb_damping, reverb_wet,
-            enable_echo, echo_delay, echo_decay,
-            enable_pitch, pitch_semitones,
-            enable_noise_reduction, enable_equalizer, eq_sub_bass, eq_bass, eq_low_mid, eq_mid, eq_high_mid, eq_presence, eq_brilliance,
-            enable_spatial, spatial_azimuth, spatial_elevation, spatial_distance,
-            enable_background, background_path, bg_volume, speech_volume, bg_fade_in, bg_fade_out,
-            conversation_mode, conversation_script, conversation_pause, speaker_transition_pause, speaker_settings_json
-        ],
-        outputs=[audio_output, waveform_data, waveform_info],
+with gr.Column(scale=1):
+    add_api_btn = gr.Button(
+        "➕ Add API Key",
+        variant="primary",
+        size="lg"
     )
     
-    # Conversation mode event handlers
-    parse_script_btn.click(
-        fn=setup_speaker_audio_components,
-        inputs=[conversation_script],
-        outputs=[
-            speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
-            speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
-            speaker_controls_row, current_speakers, speaker_settings_json
-        ]
-    )
-    
-    clear_conversation_btn.click(
-        fn=lambda: (
-            "",  # Clear conversation script
-            gr.update(visible=False, value=None),  # speaker_audio_1
-            gr.update(visible=False, value=None),  # speaker_audio_2
-            gr.update(visible=False, value=None),  # speaker_audio_3
-            gr.update(visible=False, value=None),  # speaker_audio_4
-            gr.update(visible=False, value=None),  # speaker_audio_5
-            gr.update(visible=False, value="en"),  # speaker_lang_1
-            gr.update(visible=False, value="en"),  # speaker_lang_2
-            gr.update(visible=False, value="en"),  # speaker_lang_3
-            gr.update(visible=False, value="en"),  # speaker_lang_4
-            gr.update(visible=False, value="en"),  # speaker_lang_5
-            gr.update(visible=False),  # speaker_controls_row
-            [],  # current_speakers
-            "{}"  # speaker_settings_json
-        ),
-        outputs=[
-            conversation_script,
-            speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
-            speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
-            speaker_controls_row, current_speakers, speaker_settings_json
-        ]
-    )
-    
-    # Auto-update speaker components when script changes
-    conversation_script.change(
-        fn=setup_speaker_audio_components,
-        inputs=[conversation_script],
-        outputs=[
-            speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
-            speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
-            speaker_controls_row, current_speakers, speaker_settings_json
-        ]
-    )
-    
-    # Update speaker settings when audio files are uploaded
-    for audio_component in [speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5]:
-        audio_component.change(
-            fn=update_speaker_audio_settings,
-            inputs=[
-                current_speakers,
-                speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
-                speaker_settings_json
-            ],
-            outputs=[speaker_settings_json]
-        )
-    
-    # Update speaker settings when languages are changed
-    for lang_component in [speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5]:
-        lang_component.change(
-            fn=update_speaker_language_settings,
-            inputs=[
-                current_speakers,
-                speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
-                speaker_settings_json
-            ],
-            outputs=[speaker_settings_json]
-        )
-    
-    # Update detected speakers display
-    current_speakers.change(
-        fn=lambda speakers: f"Found {len(speakers)} speakers:\n" + "\n".join([f"• {speaker}" for speaker in speakers]) if speakers else "No speakers detected",
-        inputs=[current_speakers],
-        outputs=[detected_speakers]
-    )
-    
-    # Auto-load presets for matching speaker names
-    detected_speakers.change(
-        fn=update_speaker_settings_from_presets,
-        inputs=[detected_speakers, speaker_settings_json],
-        outputs=[speaker_settings_json]
-    )
-    
-    # Conversation generation (uses the same function as regular generation)
-    generate_conversation_btn.click(
-        fn=generate_tts_audio,
-        inputs=[
-            text, ref_wav, exaggeration, temp, seed_num, cfg_weight, chunk_size,
-            language_dropdown,
-            enable_reverb, reverb_room, reverb_damping, reverb_wet,
-            enable_echo, echo_delay, echo_decay,
-            enable_pitch, pitch_semitones,
-            enable_noise_reduction, enable_equalizer, eq_sub_bass, eq_bass, eq_low_mid, eq_mid, eq_high_mid, eq_presence, eq_brilliance,
-            enable_spatial, spatial_azimuth, spatial_elevation, spatial_distance,
-            enable_background, background_path, bg_volume, speech_volume, bg_fade_in, bg_fade_out,
-            conversation_mode, conversation_script, conversation_pause, speaker_transition_pause, speaker_settings_json
-        ],
-        outputs=[audio_output, waveform_data, waveform_info],
-    )
-    
-    # Waveform analysis handlers
-    analyze_btn.click(
-        fn=lambda audio_data: analyze_audio_waveform(audio_data),
-        inputs=[waveform_data],
-        outputs=[waveform_info]
-    )
-    
-    clear_analysis_btn.click(
-        fn=lambda: "Audio analysis cleared. Generate new audio to analyze.",
-        outputs=[waveform_info]
-    )
-    
-    # Preset management
-    save_preset_btn.click(
-        fn=save_current_preset,
-        inputs=[preset_name_input, exaggeration, temp, cfg_weight, chunk_size, ref_wav],
-        outputs=[preset_status, preset_dropdown]
-    )
-    
-    load_preset_btn.click(
-        fn=load_selected_preset,
-        inputs=[preset_dropdown],
-        outputs=[preset_status, exaggeration, temp, cfg_weight, chunk_size, ref_wav]
-    )
-    
-    delete_preset_btn.click(
-        fn=delete_selected_preset,
-        inputs=[preset_dropdown],
-        outputs=[preset_status, preset_dropdown]
-    )
-    
-    refresh_btn.click(
-        fn=refresh_preset_dropdown,
-        inputs=[],
-        outputs=[preset_dropdown]
+    api_status_display = gr.Textbox(
+        label="📊 API Status",
+        value=get_api_status(),
+        interactive=False,
+        lines=3
     )
 
-    # Export handler
-    export_btn.click(
-        fn=handle_export,
-        inputs=[audio_output, export_quality],
-        outputs=[export_status]
-    )
-    
-    # Dubbing process handler function
-    def handle_dubbing_process_realtime(video_file, target_langs, custom_prompt_text, ref_audio):
-        """Handle the complete dubbing process with real-time progress tracking"""
-        try:
-            # Call the enhanced workflow with real-time updates
-            return complete_video_dubbing_workflow_with_realtime_updates(
-                video_file, target_langs, custom_prompt_text, ref_audio
-            )
-            
-        except Exception as e:
-            error_msg = f"❌ Processing Error: {str(e)}"
-            error_html = f"<div style='color: red; font-weight: bold;'>{error_msg}</div>"
-            
-            # Return error state for all outputs
-            return (
-                None,                   # final_video
-                error_msg,             # transcription_status
-                "❌ Error occurred",   # parakeet_status
-                error_html,            # transcript_html
-                error_msg,             # translation_status
-                "❌ Process failed",   # chunk_progress
-                error_html,            # translation_results
-                error_msg,             # tts_status
-                "❌ Process failed",   # audio_processing
-                error_html,            # tts_results
-                error_msg,             # video_assembly
-                "❌ Process failed",   # final_output
-                error_html,            # output_files
-                error_msg              # main_status
-            )
+gr.Markdown("""
+**💡 API Tips:**
+- Get free API keys from [Google AI Studio](https://aistudio.google.com/app/apikey)
+- Multiple keys provide redundancy and higher rate limits
+- Keys are used in round-robin fashion for load balancing
+""")
 
-    # Dubbing system event handlers
-    add_api_btn.click(
-        fn=add_gemini_api,
-        inputs=[api_name_input, api_key_input],
-        outputs=[api_status_display, api_key_input]
+# Main Dubbing Interface
+with gr.Row():
+with gr.Column(scale=2):
+# Video Upload
+video_input = gr.Video(
+    label="🎬 Upload Video File"
+)
+gr.Markdown("*Supported formats: MP4, AVI, MOV, MKV*")
+
+# Language Selection
+with gr.Group():
+    gr.Markdown("### 🌍 Target Languages")
+    target_languages = gr.CheckboxGroup(
+        choices=[(f"{lang_name} ({code})", code) for code, lang_name in SUPPORTED_LANGUAGES.items()],
+        label="🗣️ Select Languages for Dubbing",
+        info="Choose one or more languages for dubbing",
+        value=["es", "fr"]  # Default to Spanish and French
+    )
+
+# Reference Audio Upload
+with gr.Accordion("🎤 Reference Audio (Optional)", open=False):
+    gr.Markdown("""
+    ### 🎙️ Upload Reference Audio for Voice Cloning
+    Upload a reference audio file to clone the voice for each language.
+    This will make the dubbed voice sound more like the reference speaker.
+    """)
+    
+    reference_audio_upload = gr.Audio(
+        label="🎤 Upload Reference Audio (10-30 seconds recommended)",
+        type="filepath"
     )
     
-    # Connect the dubbing process button
-    process_dubbing_btn.click(
-        fn=handle_dubbing_process_realtime,
-        inputs=[video_input, target_languages, custom_prompt, reference_audio_upload],
-        outputs=[
-            dubbed_video_output,        # final_video
-            transcription_status,       # transcription_status
-            parakeet_model_status,      # parakeet_status
-            transcript_display,         # transcript_html
-            translation_status,         # translation_status
-            chunk_progress,             # chunk_progress
-            translation_results,        # translation_results
-            tts_status,                 # tts_status
-            audio_processing_status,    # audio_processing
-            tts_results,                # tts_results
-            video_assembly_status,      # video_assembly
-            final_output_status,        # final_output
-            output_files_display,       # output_files
-            dubbing_status              # main_status
-        ]
+    gr.Markdown("""
+    **💡 Reference Audio Tips:**
+    - Use clear, high-quality audio (no background noise)
+    - 10-30 seconds of speech is optimal
+    - The same reference will be used for all selected languages
+    - Leave empty to use default voice for each language
+    """)
+
+# Translation Customization
+with gr.Accordion("🎨 Translation Style", open=False):
+    custom_prompt = gr.Textbox(
+        label="✨ Custom Translation Prompt",
+        placeholder="e.g., 'Translate in a formal tone' or 'Use casual, friendly language'",
+        lines=3,
+        info="Optional: Add specific instructions for translation style"
     )
+    
+    gr.Markdown("""
+    **Style Examples:**
+    - "Translate in a formal, professional tone"
+    - "Use casual, conversational language"
+    - "Maintain the original humor and personality"
+    - "Adapt cultural references for the target audience"
+    """)
+
+# Processing Button
+process_dubbing_btn = gr.Button(
+    "🚀 Start Dubbing Process",
+    variant="primary",
+    size="lg"
+)
+
+with gr.Column(scale=1):
+# Output and Status
+with gr.Group():
+    gr.Markdown("### 📤 Dubbed Video Output")
+    
+    dubbed_video_output = gr.Video(
+        label="🎬 Dubbed Video"
+    )
+    gr.Markdown("*Preview of the first dubbed video*")
+    
+    dubbing_status = gr.Textbox(
+        label="📊 Processing Status",
+        lines=8,
+        interactive=False,
+        placeholder="Upload a video and click 'Start Dubbing Process' to begin..."
+    )
+
+# Processing Steps Info
+with gr.Accordion("🔄 Processing Pipeline", open=False):
+    gr.Markdown("""
+    ### 🛠️ Dubbing Process Steps:
+    
+    1. **🎵 Audio Extraction**
+       - Extract audio track from video using FFmpeg
+    
+    2. **🎤 Speech Recognition**
+       - Transcribe audio with timestamps using Parakeet TDT
+       - Generate segment-level timing information
+    
+    3. **🌍 Translation**
+       - Translate each segment using Gemini AI
+       - Preserve timing and context information
+       - Apply custom style instructions
+    
+    4. **🗣️ Voice Synthesis**
+       - Generate TTS for each translated segment
+       - Adjust audio speed to match original timing
+       - Use Chatterbox multilingual TTS
+    
+    5. **🎬 Video Assembly**
+       - Combine new audio with original video
+       - Maintain video quality and synchronization
+       - Export final dubbed videos
+    """)
+
+# Real-time Progress Tracking - Always Visible
+gr.Markdown("## 📊 Live Processing Progress")
+
+# Step 1: Transcription Progress
+with gr.Group():
+gr.Markdown("### 🎤 Step 1: Video Transcription")
+with gr.Row():
+transcription_status = gr.Textbox(
+    label="📝 Transcription Status",
+    value="⏳ Waiting for video upload...",
+    interactive=False,
+    lines=2
+)
+parakeet_model_status = gr.Textbox(
+    label="🤖 Parakeet Model Status", 
+    value="💤 Model not loaded",
+    interactive=False,
+    lines=2
+)
+
+transcript_display = gr.HTML(
+label="📋 Timestamped Transcript",
+value="<div style='padding: 20px; text-align: center; color: #666;'>Transcript will appear here after processing...</div>"
+)
+
+# Step 2: Translation Progress  
+with gr.Group():
+gr.Markdown("### 🌍 Step 2: Smart Chunked Translation")
+with gr.Row():
+with gr.Column():
+    translation_status = gr.Textbox(
+        label="🔄 Translation Status",
+        value="⏳ Waiting for transcription...",
+        interactive=False,
+        lines=3
+    )
+with gr.Column():
+    chunk_progress = gr.Textbox(
+        label="📦 Chunk Progress",
+        value="📊 No chunks created yet",
+        interactive=False,
+        lines=3
+    )
+
+# Translation results for each language
+translation_results = gr.HTML(
+label="📝 Translation Results by Language",
+value="<div style='padding: 20px; text-align: center; color: #666;'>Translation results will appear here...</div>"
+)
+
+# Step 3: TTS Generation Progress
+with gr.Group():
+gr.Markdown("### 🗣️ Step 3: Voice Synthesis (Chatterbox TTS)")
+with gr.Row():
+with gr.Column():
+    tts_status = gr.Textbox(
+        label="🎙️ TTS Generation Status",
+        value="⏳ Waiting for translation...",
+        interactive=False,
+        lines=3
+    )
+with gr.Column():
+    audio_processing_status = gr.Textbox(
+        label="🔧 Audio Processing",
+        value="⏳ Speed adjustment pending...",
+        interactive=False,
+        lines=3
+    )
+
+tts_results = gr.HTML(
+label="🎵 Generated Audio Segments",
+value="<div style='padding: 20px; text-align: center; color: #666;'>TTS results will appear here...</div>"
+)
+
+# Step 4: Final Video Assembly
+with gr.Group():
+gr.Markdown("### 🎬 Step 4: Video Assembly & Output")
+with gr.Row():
+video_assembly_status = gr.Textbox(
+    label="🎞️ Video Assembly Status",
+    value="⏳ Waiting for audio generation...",
+    interactive=False,
+    lines=2
+)
+final_output_status = gr.Textbox(
+    label="📁 Output Files Status",
+    value="📋 No files generated yet",
+    interactive=False,
+    lines=2
+)
+
+# Final output files display
+output_files_display = gr.HTML(
+label="📥 Download Links",
+value="<div style='padding: 20px; text-align: center; color: #666;'>Download links will appear here...</div>"
+)
+
+# Requirements and Tips
+with gr.Accordion("📋 Requirements & Tips", open=False):
+gr.Markdown("""
+### 🔧 System Requirements:
+- **Parakeet ASR**: `pip install nemo_toolkit[asr]`
+- **Gemini API**: Valid API key from Google AI Studio
+- **FFmpeg**: For video/audio processing
+- **Chatterbox Models**: Download multilingual models above
+
+### 💡 Best Practices:
+- **Video Quality**: Use clear audio with minimal background noise
+- **Language Support**: 23 languages supported for dubbing
+- **File Size**: Larger videos take longer to process
+- **API Limits**: Multiple API keys help with rate limiting
+- **Custom Prompts**: Use specific style instructions for better results
+
+### 🎯 Optimal Results:
+- Videos with clear speech work best
+- Avoid videos with heavy music or sound effects
+- Single speaker videos produce most accurate results
+- Consider video length for processing time
+""")
+
+# Hidden components for waveform analysis
+waveform_data = gr.State(None)
+
+# Language dropdown is always visible now
+
+# Model download event handlers
+check_models_btn.click(
+fn=check_model_files_status,
+outputs=[model_status_display]
+)
+
+def start_download():
+"""Start the download and return initial status."""
+download_models_async()
+return "📥 Starting download..."
+
+def download_complete_handler():
+"""Handle download completion and update UI."""
+return (
+get_download_status(),
+check_model_loaded_status(),
+gr.update(visible=should_show_load_button())
+)
+
+download_models_btn.click(
+fn=start_download,
+outputs=[download_progress_display]
+)
+
+def load_model_and_update_status():
+"""Load model and return status updates."""
+status_msg, success = load_model_manually()
+return status_msg, gr.update(visible=not success)
+
+load_model_btn.click(
+fn=load_model_and_update_status,
+outputs=[model_loading_status, load_model_btn]
+)
+
+def refresh_all_status():
+"""Refresh all status displays and button visibility."""
+return (
+check_model_files_status(),
+get_download_status(),
+check_model_loaded_status(),
+gr.update(visible=should_show_load_button())
+)
+
+refresh_status_btn.click(
+fn=refresh_all_status,
+outputs=[model_status_display, download_progress_display, model_loading_status, load_model_btn]
+)
+
+def auto_refresh_download_status():
+status = download_status["status"]
+if status == "downloading":
+return get_download_status()
+return gr.update()
+
+# Initialize status displays on app load
+demo.load(
+fn=lambda: (check_model_files_status(), get_download_status(), check_model_loaded_status(), gr.update(visible=should_show_load_button())),
+outputs=[model_status_display, download_progress_display, model_loading_status, load_model_btn]
+)
+
+# Event handlers
+run_btn.click(
+fn=generate_tts_audio,
+inputs=[
+text, ref_wav, exaggeration, temp, seed_num, cfg_weight, chunk_size,
+language_dropdown,
+enable_reverb, reverb_room, reverb_damping, reverb_wet,
+enable_echo, echo_delay, echo_decay,
+enable_pitch, pitch_semitones,
+enable_noise_reduction, enable_equalizer, eq_sub_bass, eq_bass, eq_low_mid, eq_mid, eq_high_mid, eq_presence, eq_brilliance,
+enable_spatial, spatial_azimuth, spatial_elevation, spatial_distance,
+enable_background, background_path, bg_volume, speech_volume, bg_fade_in, bg_fade_out,
+conversation_mode, conversation_script, conversation_pause, speaker_transition_pause, speaker_settings_json,
+speed_factor  # Added based on your earlier request
+],
+outputs=[audio_output, waveform_data, waveform_info],
+)
+
+# Conversation mode event handlers
+parse_script_btn.click(
+fn=setup_speaker_audio_components,
+inputs=[conversation_script],
+outputs=[
+speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
+speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
+speaker_controls_row, current_speakers, speaker_settings_json
+]
+)
+
+clear_conversation_btn.click(
+fn=lambda: (
+"",  # Clear conversation script
+gr.update(visible=False, value=None),  # speaker_audio_1
+gr.update(visible=False, value=None),  # speaker_audio_2
+gr.update(visible=False, value=None),  # speaker_audio_3
+gr.update(visible=False, value=None),  # speaker_audio_4
+gr.update(visible=False, value=None),  # speaker_audio_5
+gr.update(visible=False, value="en"),  # speaker_lang_1
+gr.update(visible=False, value="en"),  # speaker_lang_2
+gr.update(visible=False, value="en"),  # speaker_lang_3
+gr.update(visible=False, value="en"),  # speaker_lang_4
+gr.update(visible=False, value="en"),  # speaker_lang_5
+gr.update(visible=False),  # speaker_controls_row
+[],  # current_speakers
+"{}"  # speaker_settings_json
+),
+outputs=[
+conversation_script,
+speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
+speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
+speaker_controls_row, current_speakers, speaker_settings_json
+]
+)
+
+# Auto-update speaker components when script changes
+conversation_script.change(
+fn=setup_speaker_audio_components,
+inputs=[conversation_script],
+outputs=[
+speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
+speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
+speaker_controls_row, current_speakers, speaker_settings_json
+]
+)
+
+# Update speaker settings when audio files are uploaded
+for audio_component in [speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5]:
+audio_component.change(
+fn=update_speaker_audio_settings,
+inputs=[
+current_speakers,
+speaker_audio_1, speaker_audio_2, speaker_audio_3, speaker_audio_4, speaker_audio_5,
+speaker_settings_json
+],
+outputs=[speaker_settings_json]
+)
+
+# Update speaker settings when languages are changed
+for lang_component in [speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5]:
+lang_component.change(
+fn=update_speaker_language_settings,
+inputs=[
+current_speakers,
+speaker_lang_1, speaker_lang_2, speaker_lang_3, speaker_lang_4, speaker_lang_5,
+speaker_settings_json
+],
+outputs=[speaker_settings_json]
+)
+
+# Update detected speakers display
+current_speakers.change(
+fn=lambda speakers: f"Found {len(speakers)} speakers:\n" + "\n".join([f"• {speaker}" for speaker in speakers]) if speakers else "No speakers detected",
+inputs=[current_speakers],
+outputs=[detected_speakers]
+)
+
+# Auto-load presets for matching speaker names
+detected_speakers.change(
+fn=update_speaker_settings_from_presets,
+inputs=[detected_speakers, speaker_settings_json],
+outputs=[speaker_settings_json]
+)
+
+# Conversation generation (uses the same function as regular generation)
+generate_conversation_btn.click(
+fn=generate_tts_audio,
+inputs=[
+text, ref_wav, exaggeration, temp, seed_num, cfg_weight, chunk_size,
+language_dropdown,
+enable_reverb, reverb_room, reverb_damping, reverb_wet,
+enable_echo, echo_delay, echo_decay,
+enable_pitch, pitch_semitones,
+enable_noise_reduction, enable_equalizer, eq_sub_bass, eq_bass, eq_low_mid, eq_mid, eq_high_mid, eq_presence, eq_brilliance,
+enable_spatial, spatial_azimuth, spatial_elevation, spatial_distance,
+enable_background, background_path, bg_volume, speech_volume, bg_fade_in, bg_fade_out,
+conversation_mode, conversation_script, conversation_pause, speaker_transition_pause, speaker_settings_json,
+speed_factor  # Added based on your earlier request
+],
+outputs=[audio_output, waveform_data, waveform_info],
+)
+
+# Waveform analysis handlers
+analyze_btn.click(
+fn=lambda audio_data: analyze_audio_waveform(audio_data),
+inputs=[waveform_data],
+outputs=[waveform_info]
+)
+
+clear_analysis_btn.click(
+fn=lambda: "Audio analysis cleared. Generate new audio to analyze.",
+outputs=[waveform_info]
+)
+
+# Preset management
+save_preset_btn.click(
+fn=save_current_preset,
+inputs=[preset_name_input, exaggeration, temp, cfg_weight, chunk_size, ref_wav],
+outputs=[preset_status, preset_dropdown]
+)
+
+load_preset_btn.click(
+fn=load_selected_preset,
+inputs=[preset_dropdown],
+outputs=[preset_status, exaggeration, temp, cfg_weight, chunk_size, ref_wav]
+)
+
+delete_preset_btn.click(
+fn=delete_selected_preset,
+inputs=[preset_dropdown],
+outputs=[preset_status, preset_dropdown]
+)
+
+refresh_btn.click(
+fn=refresh_preset_dropdown,
+inputs=[],
+outputs=[preset_dropdown]
+)
+
+# Export handler
+export_btn.click(
+fn=handle_export,
+inputs=[audio_output, export_quality],
+outputs=[export_status]
+)
+
+# Dubbing process handler function
+def handle_dubbing_process_realtime(video_file, target_langs, custom_prompt_text, ref_audio):
+"""Handle the complete dubbing process with real-time progress tracking"""
+try:
+# Call the enhanced workflow with real-time updates
+return complete_video_dubbing_workflow_with_realtime_updates(
+video_file, target_langs, custom_prompt_text, ref_audio
+)
+
+except Exception as e:
+error_msg = f"❌ Processing Error: {str(e)}"
+error_html = f"<div style='color: red; font-weight: bold;'>{error_msg}</div>"
+
+# Return error state for all outputs
+return (
+None,                   # final_video
+error_msg,             # transcription_status
+"❌ Error occurred",   # parakeet_status
+error_html,            # transcript_html
+error_msg,             # translation_status
+"❌ Process failed",   # chunk_progress
+error_html,            # translation_results
+error_msg,             # tts_status
+"❌ Process failed",   # audio_processing
+error_html,            # tts_results
+error_msg,             # video_assembly
+"❌ Process failed",   # final_output
+error_html,            # output_files
+error_msg              # main_status
+)
+
+# Dubbing system event handlers
+add_api_btn.click(
+fn=add_gemini_api,
+inputs=[api_name_input, api_key_input],
+outputs=[api_status_display, api_key_input]
+)
+
+# Connect the dubbing process button
+process_dubbing_btn.click(
+fn=handle_dubbing_process_realtime,
+inputs=[video_input, target_languages, custom_prompt, reference_audio_upload],
+outputs=[
+dubbed_video_output,        # final_video
+transcription_status,       # transcription_status
+parakeet_model_status,      # parakeet_status
+transcript_display,         # transcript_html
+translation_status,         # translation_status
+chunk_progress,             # chunk_progress
+translation_results,        # translation_results
+tts_status,                 # tts_status
+audio_processing_status,    # audio_processing
+tts_results,                # tts_results
+video_assembly_status,      # video_assembly
+final_output_status,        # final_output
+output_files_display,       # output_files
+dubbing_status              # main_status
+]
+)
     
 
     
