@@ -2644,17 +2644,16 @@ def load_selected_preset(preset_name):
     if preset:
         # Use the saved audio path, not the original
         ref_audio_path = preset.get('ref_audio_path', '')
-        # Always return the preset data, with ref_audio_path if valid
         return (
             f"✅ Loaded voice preset '{preset_name}'" + (" with custom voice" if ref_audio_path and os.path.exists(ref_audio_path) else ""),
-            preset['exaggeration'],
-            preset['temperature'], 
-            preset['cfg_weight'],
-            preset['chunk_size'],
-            ref_audio_path if ref_audio_path and os.path.exists(ref_audio_path) else None
+            preset.get('exaggeration', 0.4),  # Updated default as per your request
+            preset.get('temperature', 0.7),  # Updated default as per your request
+            preset.get('cfg_weight', 0.6),   # Updated default as per your request
+            preset.get('chunk_size', 300),
+            ref_audio_path if ref_audio_path and os.path.exists(ref_audio_path) else None,
+            preset.get('speed_factor', 1.0)  # Added as per your request
         )
-    else:
-        return "❌ Failed to load preset", None, None, None, None, None
+    return "❌ Failed to load preset", None, None, None, None, None, None
 
 def delete_selected_preset(preset_name):
     """Delete selected preset and its audio file."""
@@ -2664,15 +2663,13 @@ def delete_selected_preset(preset_name):
     if delete_voice_preset(preset_name):
         updated_choices = get_preset_names()
         return f"✅ Voice preset '{preset_name}' deleted (including audio file)", gr.update(choices=updated_choices, value=None)
-    else:
-        return "❌ Failed to delete preset", gr.update()
+    return "❌ Failed to delete preset", gr.update()
 
 def refresh_preset_dropdown():
     """Refresh the preset dropdown with current presets."""
     choices = get_preset_names()
     return gr.update(choices=choices, value=None)
 
-# Standard Gradio theme - no custom CSS needed
 def get_custom_css():
     """Using Gradio's default theme styling."""
     return ""
