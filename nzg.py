@@ -1666,7 +1666,7 @@ def save_voice_preset(name, settings):
     ref_audio_path = settings.get('ref_audio', '')
     saved_audio_path = None
     
-        if ref_audio_path:
+    if ref_audio_path:  # <-- fixed indentation
         saved_audio_path = copy_reference_audio(ref_audio_path, name)
         if not saved_audio_path:
             print(f"⚠️ Warning: Could not save reference audio for preset '{name}'")
@@ -1676,11 +1676,11 @@ def save_voice_preset(name, settings):
         'temperature': settings['temperature'],
         'cfg_weight': settings['cfg_weight'],
         'chunk_size': settings['chunk_size'],
-        'language': settings.get('language', 'en'),  # Save language setting
-        'ref_audio_path': saved_audio_path or '',  # Path to saved audio file
-        'original_ref_audio': ref_audio_path or '',  # Original path for reference
+        'language': settings.get('language', 'en'),
+        'ref_audio_path': saved_audio_path or '',
+        'original_ref_audio': ref_audio_path or '',
         'created': datetime.now().isoformat(),
-        'speed_factor': settings.get('speed_factor', 1.0)  # Added based on your earlier request
+        'speed_factor': settings.get('speed_factor', 1.0)
     }
     
     success = save_voice_presets(presets)
@@ -1690,6 +1690,7 @@ def save_voice_preset(name, settings):
         else:
             print(f"🎭 Saved voice preset '{name}' (parameters only, no custom voice)")
     return success
+
 
 def load_voice_preset(name):
     """Load a voice preset by name."""
@@ -2638,20 +2639,19 @@ def save_current_preset(preset_name, exaggeration, temperature, cfg_weight, chun
 def load_selected_preset(preset_name):
     """Load selected preset and return its settings including reference audio."""
     if not preset_name:
-        return "Please select a preset", None, None, None, None, None
+        return "Please select a preset", None, None, None, None, None, None
     
     preset = load_voice_preset(preset_name)
     if preset:
-        # Use the saved audio path, not the original
-        ref_audio_path = preset.get('ref_audio_path', '')
+        ref_audio_path = preset.get('ref_audio_path', '')  # 4 spaces indent
         return (
             f"✅ Loaded voice preset '{preset_name}'" + (" with custom voice" if ref_audio_path and os.path.exists(ref_audio_path) else ""),
-            preset.get('exaggeration', 0.4),  # Updated default as per your request
-            preset.get('temperature', 0.7),  # Updated default as per your request
-            preset.get('cfg_weight', 0.6),   # Updated default as per your request
+            preset.get('exaggeration', 0.4),  # Default as per your request
+            preset.get('temperature', 0.7),   # Default as per your request
+            preset.get('cfg_weight', 0.6),    # Default as per your request
             preset.get('chunk_size', 300),
             ref_audio_path if ref_audio_path and os.path.exists(ref_audio_path) else None,
-            preset.get('speed_factor', 1.0)  # Added as per your request
+            preset.get('speed_factor', 1.0)   # Added as per your request
         )
     return "❌ Failed to load preset", None, None, None, None, None, None
 
@@ -3558,41 +3558,41 @@ with gr.Accordion("🎵 Audio Effects & Processing", open=False):
                 eq_brilliance = gr.Slider(-12, 12, step=1, label="Brilliance\n(8k-20k Hz)", value=0)
 
     # 3D Spatial Audio Tab
-    with gr.Tab("🎧 3D Spatial Audio"):
-        enable_spatial = gr.Checkbox(label="🎧 Enable 3D Spatial Positioning", value=False)
-        gr.Markdown("*Position voices in 3D space for immersive experiences*")
-        
-        with gr.Row():
-            with gr.Column():
-                spatial_azimuth = gr.Slider(
-                    -180, 180, step=5, 
-                    label="🧭 Azimuth (degrees)", 
-                    value=0,
-                    info="Left-Right positioning (-180° to 180°)"
-                )
-                spatial_elevation = gr.Slider(
-                    -90, 90, step=5, 
-                    label="📐 Elevation (degrees)", 
-                    value=0,
-                    info="Up-Down positioning (-90° to 90°)"
-                )
-            with gr.Column():
-                spatial_distance = gr.Slider(
-                    0.1, 5.0, step=0.1, 
-                    label="📏 Distance", 
-                    value=1.0,
-                    info="Distance from listener (0.1 = close, 5.0 = far)"
-                )
-                gr.Markdown("""
-                **Quick Presets:**
-                - Center: Az=0°, El=0°, Dist=1.0
-                - Left: Az=-90°, El=0°, Dist=1.0  
-                - Right: Az=90°, El=0°, Dist=1.0
-                - Above: Az=0°, El=45°, Dist=1.0
-                - Distant: Az=0°, El=0°, Dist=3.0
-                """)
+                with gr.Tab("🎧 3D Spatial Audio"):
+                    enable_spatial = gr.Checkbox(label="🎧 Enable 3D Spatial Positioning", value=False)
+                    gr.Markdown("*Position voices in 3D space for immersive experiences*")
+                    
+                    with gr.Row():
+                        with gr.Column():
+                            spatial_azimuth = gr.Slider(
+                                -180, 180, step=5, 
+                                label="🧭 Azimuth (degrees)", 
+                                value=0,
+                                info="Left-Right positioning (-180° to 180°)"
+                            )
+                            spatial_elevation = gr.Slider(
+                                -90, 90, step=5, 
+                                label="📐 Elevation (degrees)", 
+                                value=0,
+                                info="Up-Down positioning (-90° to 90°)"
+                            )
+                        with gr.Column():
+                            spatial_distance = gr.Slider(
+                                0.1, 5.0, step=0.1, 
+                                label="📏 Distance", 
+                                value=1.0,
+                                info="Distance from listener (0.1 = close, 5.0 = far)"
+                            )
+                            gr.Markdown("""
+                            **Quick Presets:**
+                            - Center: Az=0°, El=0°, Dist=1.0
+                            - Left: Az=-90°, El=0°, Dist=1.0  
+                            - Right: Az=90°, El=0°, Dist=1.0
+                            - Above: Az=0°, El=45°, Dist=1.0
+                            - Distant: Az=0°, El=0°, Dist=3.0
+                            """)
 
-    # Background Music Mixer Tab
+                # Background Music Mixer Tab
     with gr.Tab("🎵 Background Music"):
         enable_background = gr.Checkbox(label="🎵 Enable Background Music/Ambience", value=False)
         gr.Markdown("*Blend generated speech with background audio*")
@@ -4382,4 +4382,4 @@ dubbing_status              # main_status
     
 
 
-demo.launch()
+demo.launch(share=True)
